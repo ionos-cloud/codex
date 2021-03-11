@@ -1,18 +1,35 @@
 import fs from 'fs'
-import vdc from '../services/vdc'
+import * as vdc from '../services/vdc'
 
-export class Config {
-  static dir = '.swagman'
-  static defaultVersion = 5
-  static baselineFileName = 'baseline.json'
-  static patchesDir = 'patches'
+export const dir = '.swagman'
+export const defaultVersion = 5
+export const baselineFileName = 'baseline.json'
+export const patchesDir = 'patches'
+export const versionPrefix = 'v'
+export const jsonIndent = 2
 
-  public init() {
-    fs.mkdirSync(`${Config.dir}/${Config.defaultVersion}/${Config.patchesDir}`, { recursive: true })
-    const swagger = vdc.fetch()
-    /* create baseline */
-    fs.writeFileSync(`${Config.dir}/${Config.defaultVersion}/${Config.baselineFileName}`, JSON.stringify(swagger, null, 2))
-  }
+export function getVersionPath(version = defaultVersion): string {
+  return `${dir}/${versionPrefix}${version}`
 }
 
-export default new Config()
+export function getBaselinePath(version = defaultVersion): string {
+  return `${getVersionPath(version)}/${baselineFileName}`
+}
+
+export function getPatchesPath(version = defaultVersion): string {
+  return `${getVersionPath(version)}/${patchesDir}`
+}
+
+export async function init() {
+  const swagger = await vdc.fetchSwaggerFile()
+
+  /* create patches path */
+  fs.mkdirSync(getPatchesPath(), { recursive: true })
+
+  /* create baseline file */
+  fs.writeFileSync(getBaselinePath(), JSON.stringify(swagger, null, jsonIndent))
+}
+
+export function getPatchPath(version: number, patchNumber: number): string {
+  return `${getPatchesPath(version)}/${patchNumber}.patch`
+}

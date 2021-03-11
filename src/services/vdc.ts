@@ -1,23 +1,23 @@
 import axios from 'axios'
-import { Config } from './config'
+import * as config from './config'
 
-export class Vdc {
+export const host = 'https://api.ionos.com'
+export const basePath = 'cloudapi'
+export const swaggerFile = 'swagger.json'
 
-  baseUrl = 'https://api.ionos.com/cloudapi'
-  defaultVersion = 5
-
-  public async fetch(version = Config.defaultVersion): Promise<Record<string, any>> {
-    const response = await axios.get(this.getUrl(version))
-    if (response.status !== 200) {
-      throw new Error(`swagger file not found for version ${version}`)
-    }
-
-    return response.data
-  }
-
-  public getUrl(version = Config.defaultVersion): string {
-    return `${this.baseUrl}/v${version}/swagger.json`
-  }
+export function getSwaggerPath(version = config.defaultVersion): string {
+  return `/${basePath}/v${version}/${swaggerFile}`
 }
 
-export default new Vdc()
+export function getSwaggerUrl(version = config.defaultVersion): string {
+  return `${host}${getSwaggerPath(version)}`
+}
+
+export async function fetchSwaggerFile(version = config.defaultVersion): Promise<Record<string, any>> {
+  const response = await axios.get(getSwaggerUrl(version))
+  if (response.status !== 200) {
+    throw new Error(`swagger file not found for version ${version}`)
+  }
+
+  return response.data
+}

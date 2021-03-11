@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 
-import configService from '../services/config'
+import * as config from '../services/config'
 
 export default class Init extends Command {
   static description = 'initialize a swagman project in the current directory'
@@ -15,6 +15,6 @@ export default class Init extends Command {
 
   async run() {
     this.parse(Init)
-    configService.init()
+    await config.init()
   }
 }
