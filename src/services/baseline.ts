@@ -1,7 +1,7 @@
-import * as config from './config'
 import * as fs from 'fs'
 
-export const sdkVersionSuffixPattern = /-SDK\.([0-9]+)/
+import * as config from './config'
+import * as swagger from './swagger'
 
 /**
  * read the baseline file contents
@@ -24,28 +24,13 @@ export function readJSON(version: number): Record<string, any> {
 }
 
 /**
- * get patch level from baseline
+ * get the patch level
  * @param {number} version - swagger version
  *
- * @returns {number} patch level
+ * @return {number} patch level
  */
 export function getPatchLevel(version: number): number {
-  const swagger = readJSON(version)
-  if (swagger.info === undefined || swagger.info.version === undefined) {
-    throw new Error('invalid baseline swagger file; version information not found')
-  }
-
-  const match = swagger.info.version.match(sdkVersionSuffixPattern)
-  if (match === null || match.length < 2) {
-    return 0
-  }
-
-  const level = Number(match[1])
-  if (isNaN(level)) {
-    throw new TypeError(`invalid sdk patch level found in baseline: ${match[1]}`)
-  }
-
-  return level
+  return swagger.getPatchLevel(readJSON(version))
 }
 
 /**

@@ -26,47 +26,14 @@ describe('baseline tests', function () {
     mock.restore()
   })
 
-  it('should get the patch level', () => {
-    const level = 4
+  it('should read the patch level', () => {
+    const level = 3
     const content = {info: {version: `v5.0-SDK.${level}`}}
     mock({
       [config.getBaselinePath(5)]: JSON.stringify(content)
     })
 
-    expect(baseline.getPatchLevel(5)).to.equal(level)
-
-    mock.restore()
-  })
-
-  it('should get a 0 patch level when there\'s none', () => {
-    const content = {info: {version: 'v5.0'}}
-    mock({
-      [config.getBaselinePath(5)]: JSON.stringify(content)
-    })
-
-    expect(baseline.getPatchLevel(5)).to.equal(0)
-
-    mock.restore()
-  })
-
-  it('should throw when there\'s no version info', () => {
-    const content = {info: 'foo'}
-    mock({
-      [config.getBaselinePath(5)]: JSON.stringify(content)
-    })
-
-    expect(() => baseline.getPatchLevel(5)).to.throw()
-
-    mock.restore()
-  })
-
-  it('should return 0 when there\'s an invalid patch level', () => {
-    const content = {info: {version: 'v5.0-SDK.foo'}}
-    mock({
-      [config.getBaselinePath(5)]: JSON.stringify(content)
-    })
-
-    expect(baseline.getPatchLevel(5)).to.equal(0)
+    expect(baseline.getPatchLevel(5)).to.deep.equal(level)
 
     mock.restore()
   })

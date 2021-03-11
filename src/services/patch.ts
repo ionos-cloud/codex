@@ -24,7 +24,5 @@ export function readPatch(version: number, patchNumber: number): string {
  * @returns {string} content with patch applied
  */
 export function applyPatch(target: string, version: number, patchNumber: number): string {
-  const patch = readPatch(version, patchNumber)
-  const result = diff.applyPatch(target, patch)
-  return result
+  return diff.applyPatch(target, readPatch(version, patchNumber))
 }
