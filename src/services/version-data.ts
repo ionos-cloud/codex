@@ -87,6 +87,7 @@ export class VersionData {
   }
 
   load() {
+    this.validate()
     this.#baseline = fs.readFileSync(this.getBaselinePath()).toString()
     this.#baselineJson = JSON.parse(this.#baseline)
     this.#versionPatchLevel = this.getVersionPatchLevel()
