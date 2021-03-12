@@ -42,6 +42,8 @@ export function getPatchLevel(version: number): number {
 export function compile(version = config.defaultVersion, level = 0, fileName = 'swagger.json') {
 
   /* apply patches in sequence */
+  const currentPatchLevel = getPatchLevel(version)
+  for (let )
 
   // diff.applyPatch()
 }

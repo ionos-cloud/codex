@@ -25,4 +25,60 @@ describe('config tests', () => {
     expect(fs.readFileSync(config.getBaselinePath()).toString()).to.equal(expected)
     mock.restore()
   })
+
+  it('should count patches correctly', () => {
+    const version = 5
+    mock(
+      {
+        [config.getPatchPath(version, 1)]: 'foo',
+        [config.getPatchPath(version, 2)]: 'bar',
+        [config.getPatchPath(version, 3)]: 'foo',
+        [config.getPatchPath(version, 4)]: 'bar',
+        [config.getPatchPath(version, 5)]: 'foo',
+        [config.getPatchPath(version, 6)]: 'bar',
+        [config.getPatchPath(version, 7)]: 'foo',
+        [config.getPatchPath(version, 8)]: 'bar',
+        [config.getPatchPath(version, 9)]: 'bar',
+        [config.getPatchPath(version, 10)]: 'foo',
+        [config.getPatchPath(version, 11)]: 'bar',
+        [config.getPatchPath(version, 12)]: 'foo',
+        [`${config.getPatchesPath(version)}/foo.txt`]: 'bar'
+      }
+    )
+    expect(config.countPatches(version)).to.equal(12)
+    mock.restore()
+  })
+
+  it('should return 0 when there are no patches', () => {
+    const version = 5
+    mock(
+      {
+        [`${config.getPatchesPath(version)}/foo.txt`]: 'bar'
+      }
+    )
+    expect(config.countPatches(version)).to.equal(0)
+    mock.restore()
+  })
+
+
+  it('should throw when patches are out of order', () => {
+    const version = 5
+    mock(
+      {
+        [config.getPatchPath(version, 1)]: 'foo',
+        [config.getPatchPath(version, 2)]: 'bar',
+        [config.getPatchPath(version, 3)]: 'foo',
+        [config.getPatchPath(version, 4)]: 'bar',
+        [config.getPatchPath(version, 5)]: 'foo',
+        [config.getPatchPath(version, 8)]: 'bar',
+        [config.getPatchPath(version, 9)]: 'bar',
+        [config.getPatchPath(version, 10)]: 'foo',
+        [config.getPatchPath(version, 11)]: 'bar',
+        [config.getPatchPath(version, 12)]: 'foo',
+        [`${config.getPatchesPath(version)}/foo.txt`]: 'bar'
+      }
+    )
+    expect(() => config.countPatches(version)).to.throw()
+    mock.restore()
+  })
 })
