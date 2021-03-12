@@ -6,7 +6,7 @@ export const sdkVersionSuffixPattern = /-SDK\.(\d+)/
  *
  * @returns {number} patch level
  */
-export function getPatchLevel(swagger: Record<string, any>): number {
+export function getVersionPatchLevel(swagger: Record<string, any>): number {
 
   if (swagger.info === undefined || swagger.info.version === undefined) {
     throw new Error('invalid baseline swagger file; version information not found')
