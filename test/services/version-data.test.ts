@@ -1,13 +1,15 @@
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
 import { VersionData, Mode, Status } from '../../src/services/version-data'
-import * as vdc from '../../src/services/vdc'
+import vdc from '../../src/services/vdc'
 import fs = require('fs')
 import mock = require('mock-fs')
 import nock = require('nock')
+import chaiAsPromised from 'chai-as-promised'
 
 describe('version data tests', () => {
 
-  const mockBaseline = {info: {version: 'v5.0-SDK.1'}}
+  const mockBaseline = {info: {version: 'v5.0'}}
+  const mockBaselineSDK1 = {info: {version: 'v5.0-SDK.1'}}
   const mockVersionData = (baseline: Record<string, any>) => {
     const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
 
@@ -17,13 +19,19 @@ describe('version data tests', () => {
     mock({
       [versionData.getBaselinePath()]: JSON.stringify(baseline),
       [versionData.getStatePath()]: JSON.stringify(state),
-      [versionData.getPatchesPath()]: {}
+      [versionData.getPatchesPath()]: {},
+      [versionData.getUpstreamPath()]: {}
     })
 
     versionData.load()
 
     return versionData
   }
+
+  const mockVdc = (version: number, content: Record<string, any>) =>
+    nock(vdc.host)
+      .get(vdc.getSwaggerPath(version))
+      .reply(200, JSON.stringify(content), {'Content-Type': 'application/json'})
 
   it('should create the version data correctly', async () => {
 
@@ -108,14 +116,14 @@ describe('version data tests', () => {
   })
 
   it('should read the baseline correctly', () => {
-    const versionData = mockVersionData(mockBaseline)
-    expect(versionData.getBaseline()).to.equal(JSON.stringify(mockBaseline))
+    const versionData = mockVersionData(mockBaselineSDK1)
+    expect(versionData.getBaseline()).to.equal(JSON.stringify(mockBaselineSDK1))
     mock.restore()
   })
 
   it('should read the baseline as a JSON', () => {
-    const versionData = mockVersionData(mockBaseline)
-    expect(versionData.getBaselineJSON()).to.deep.equal(mockBaseline)
+    const versionData = mockVersionData(mockBaselineSDK1)
+    expect(versionData.getBaselineJSON()).to.deep.equal(mockBaselineSDK1)
     mock.restore()
   })
 
@@ -131,7 +139,7 @@ describe('version data tests', () => {
 
   it('should read a patch', () => {
     const patch1 = 'foo'
-    const versionData = mockVersionData(mockBaseline)
+    const versionData = mockVersionData(mockBaselineSDK1)
     mock({
       [versionData.getPatchPath(1)]: patch1,
     })
@@ -156,12 +164,62 @@ describe('version data tests', () => {
   "foo": "baz"
 }`
 
-    const versionData = mockVersionData(mockBaseline)
+    const versionData = mockVersionData(mockBaselineSDK1)
     mock({
       [versionData.getPatchPath(1)]: patchBody,
     })
 
     expect(versionData.applyPatch(target, 1)).to.equal(expected)
+
+    mock.restore()
+  })
+
+  it('should determine vdc updates', async () => {
+    const upstream = {info: {version: 'v5.0-SDK.2'}}
+    const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
+
+    const version = 5
+    const versionData = new VersionData(version)
+
+    mock({
+      [versionData.getBaselinePath()]: JSON.stringify(mockBaselineSDK1),
+      [versionData.getStatePath()]: JSON.stringify(state),
+      [versionData.getPatchPath(1)]: 'foo',
+      [versionData.getPatchPath(2)]: 'bar',
+      [versionData.getUpstreamPath()]: {}
+    })
+
+    versionData.load()
+    nock(vdc.host)
+      .get(vdc.getSwaggerPath(versionData.version))
+      .reply(200, JSON.stringify(upstream), {'Content-Type': 'application/json'})
+
+    const update = await versionData.updateCheck()
+    expect(update).to.not.be.undefined
+    expect(update?.patch).to.be.not.empty
+    expect(update?.content).to.equal(JSON.stringify(upstream, null, 2))
+
+    mock.restore()
+  })
+
+  it('should throw when upstream has a greater patch level than the number of patches',  () => {
+    const versionData = mockVersionData(mockBaseline)
+    const upstream = {info: {version: 'v5.0-SDK.2'}}
+    mockVdc(versionData.version, upstream)
+
+    chai.use(chaiAsPromised)
+    expect(versionData.updateCheck()).to.eventually.be.rejectedWith(Error)
+
+    mock.restore()
+  })
+
+  it('should throw when baseline patch level is greater than the upstream patch level',  () => {
+    const versionData = mockVersionData(mockBaselineSDK1)
+    const upstream = {info: {version: 'v5.0'}}
+    mockVdc(versionData.version, upstream)
+
+    chai.use(chaiAsPromised)
+    expect(versionData.updateCheck()).to.eventually.be.rejectedWith(Error)
 
     mock.restore()
   })

@@ -1,14 +1,13 @@
 import fs from 'fs'
 import glob from 'glob'
 
-import * as vdc from '../services/vdc'
+import vdc from '../services/vdc'
 import * as path from 'path'
 import * as swagger from './swagger'
 import * as diff from 'diff'
 import ui from './ui'
 import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
-import * as json from './json'
 
 export enum Mode {
   IDLE,
@@ -26,12 +25,18 @@ export interface VersionState {
   data: Record<string, any>;
 }
 
+export interface UpstreamUpdateInfo {
+  content: string;
+  patch: string;
+}
+
 export class VersionData {
 
   static dir = '.swagman'
   static defaultVersion = 5
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
+  static upstreamDir = 'upstream'
   static versionPrefix = 'v'
   static jsonIndent = 2
   static stateFileName = 'state.json'
@@ -71,6 +76,10 @@ export class VersionData {
     return `${this.getPatchesPath()}/${patchNumber}.txt`
   }
 
+  public getUpstreamPath(): string {
+    return `${this.getVersionPath()}/${VersionData.upstreamDir}`
+  }
+
   public getStatePath(): string {
     return `${this.getVersionPath()}/${VersionData.stateFileName}`
   }
@@ -107,6 +116,9 @@ export class VersionData {
     ui.info('creating patches dir')
     /* create patches path */
     fs.mkdirSync(this.getPatchesPath(), {recursive: true})
+
+    ui.info('creating upstream dir')
+    fs.mkdirSync(this.getUpstreamPath(), { recursive: true })
 
     ui.info('creating baseline')
     /* create baseline file */
@@ -210,6 +222,11 @@ export class VersionData {
     const patchesPath = this.getPatchesPath()
     if (!fs.existsSync(patchesPath)) {
       throw new Error(`${patchesPath} not found`)
+    }
+
+    const upstreamPath = this.getUpstreamPath()
+    if (!fs.existsSync(upstreamPath)) {
+      throw new Error(`${upstreamPath} not found`)
     }
 
     const baselinePath = this.getBaselinePath()
@@ -318,14 +335,67 @@ export class VersionData {
     return ret
   }
 
-  async updateCheck(): string | undefined {
-  
+  async updateCheck(): Promise<UpstreamUpdateInfo | undefined> {
+
     const upstream = await vdc.fetchSwaggerFile(this.version)
 
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
     if (this.versionPatchLevel > upstreamPatchLevel) {
       throw new Error(`illegal state found: baseline patch level (${this.versionPatchLevel}) is greater than the vdc patch level (${upstreamPatchLevel})`)
     }
+
+    if (upstreamPatchLevel > this.numberOfPatches) {
+      throw new Error(`illegal state found: upstream patch level is ${upstreamPatchLevel} but we only have ${this.numberOfPatches} patches`)
+    }
+
+    const normalizedUpstream = JSON.stringify(upstream, null, 2)
+    const normalizedBaseline = JSON.stringify(this.baselineJson, null, 2)
+    if ((this.versionPatchLevel !== upstreamPatchLevel) || (normalizedBaseline !== normalizedUpstream)) {
+      /* change detected */
+
+      let patch = ''
+      if (upstreamPatchLevel > 0) {
+        const compiled = this.compile(upstreamPatchLevel)
+        patch = diff.createPatch('swagger.json', JSON.stringify(compiled, null, 2), normalizedUpstream)
+      }
+
+      patch = diff.createPatch('swagger.json', normalizedBaseline, normalizedUpstream)
+      return {
+        patch,
+        content: normalizedUpstream
+      }
+    }
+
+    return undefined
+  }
+
+  getNewUpstreamPatchFileName(): string {
+    const now = new Date()
+    const padZeros =
+      (...numbers: number[]): string =>
+        numbers.reduce(
+          (prev: string, current: number): string => `${prev}${current > 0 ? current : `0${current}`}`, ''
+        )
+    const timestamp = padZeros(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDay(),
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds()
+    )
+    return `${this.getUpstreamPath()}/upstream-update-${timestamp}.patch`
+  }
+
+  createNewUpstreamUpdate(update: string): string {
+    const updateFileName = this.getNewUpstreamPatchFileName()
+    fs.writeFileSync(updateFileName, update)
+
+    return updateFileName
+  }
+
+  updateBaseline(content: string) {
+    fs.writeFileSync(this.getBaselinePath(), content)
   }
 }
 

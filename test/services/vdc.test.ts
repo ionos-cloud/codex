@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import * as vdc from '../../src/services/vdc'
+import vdc from '../../src/services/vdc'
 import nock = require('nock')
 
 describe('vdc tests', () => {

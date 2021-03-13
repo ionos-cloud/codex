@@ -2,14 +2,12 @@ import {Command, flags} from '@oclif/command'
 
 import { VersionData } from '../services/version-data'
 import runConfig from '../services/run-config'
-import * as vdc from '../services/vdc'
-import * as json from '../services/json'
 import ui from '../services/ui'
-import * as diff from 'diff'
-import * as swagger from '../services/swagger'
+import vdc from '../services/vdc'
 
 export default class Update extends Command {
   static description = 'update baseline from vdc'
+  static EXIT_CODE_ON_UPDATES = 2
 
   static flags = {
     help: flags.help({char: 'h'}),
@@ -28,7 +26,8 @@ export default class Update extends Command {
       char: 'y',
       description: 'answer yes to all questions; useful in CI automation',
       default: false
-    })
+    }),
+    'vdc-host': flags.string({description: 'vdc host'})
   }
 
   async run() {
@@ -37,6 +36,27 @@ export default class Update extends Command {
     const versionData = new VersionData(flags.version)
     await versionData.load()
 
+    if (flags['vdc-host'] !== undefined) {
+      vdc.host = flags['vdc-host']
+    }
 
+    const update = await versionData.updateCheck()
+    if (update === undefined) {
+      ui.info('no VDC upstream updates found')
+      this.exit()
+    }
+
+    ui.warning('updates found in VDC swagger')
+    const updateFile = versionData.createNewUpstreamUpdate(update?.patch)
+    ui.info(`upstream update saved to ${updateFile}`)
+
+    if (flags.check) {
+      this.exit(Update.EXIT_CODE_ON_UPDATES)
+    }
+
+    ui.info('performing baseline update')
+    versionData.updateBaseline(update?.content)
+
+    ui.info('baseline updated successfully')
   }
 }
