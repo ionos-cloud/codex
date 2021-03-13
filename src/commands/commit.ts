@@ -12,6 +12,7 @@ export default class Commit extends Command {
     help: flags.help({char: 'h'}),
     version: flags.integer({char: 'v', required: false, default: VersionData.defaultVersion}),
     debug: flags.boolean({char: 'd', default: false}),
+    message: flags.string({char: 'm', required: false})
   }
 
   protected async catch(err: any) {
@@ -55,6 +56,11 @@ export default class Commit extends Command {
 
     ui.info(`saving patch ${patchBeingEdited}`)
     versionData.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())
+
+    if (flags.message !== undefined) {
+      ui.info('saving patch description')
+      versionData.describePatch(patchBeingEdited, flags.message)
+    }
     versionData.setIdle().saveState()
 
     ui.info(`removing work file ${workFile}`)

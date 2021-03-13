@@ -7,6 +7,7 @@ import * as swagger from './swagger'
 import * as diff from 'diff'
 import ui from './ui'
 import { PatchError } from '../exceptions/patch-error'
+import chalk from 'chalk'
 
 export enum Mode {
   IDLE,
@@ -65,6 +66,10 @@ export class VersionData {
     return `${this.getPatchesPath()}/${patchNumber}.patch`
   }
 
+  public getPatchDescriptionPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.txt`
+  }
+
   public getStatePath(): string {
     return `${this.getVersionPath()}/${VersionData.stateFileName}`
   }
@@ -85,7 +90,7 @@ export class VersionData {
   }
 
   public saveState(): VersionData {
-    ui.debug('saving state')
+    ui.debug(`saving state: ${JSON.stringify(this.state)}`)
     fs.writeFileSync(this.getStatePath(), JSON.stringify(this.state, null, 2))
     return this
   }
@@ -114,7 +119,7 @@ export class VersionData {
 
   load() {
     this.validate()
-    ui.info(`working with version ${this.version}`)
+    ui.info(`version: ${chalk.greenBright(`${this.version}`)}`)
     ui.debug('loading baseline')
     this.baseline = fs.readFileSync(this.getBaselinePath()).toString()
 
@@ -124,11 +129,11 @@ export class VersionData {
     ui.debug('parsing patch level from baseline swagger version')
     this.versionPatchLevel = this.getVersionPatchLevel()
 
-    ui.info(`found patch level ${this.versionPatchLevel}`)
+    ui.info(`baseline patch level: ${chalk.greenBright(`${this.versionPatchLevel}`)}`)
 
     ui.debug('counting patches')
     this.numberOfPatches = this.countPatches()
-    ui.info(`found ${this.numberOfPatches} patches`)
+    ui.info(`total patches: ${chalk.greenBright(`${this.numberOfPatches}`)}`)
 
     try {
       ui.debug('loading state')
@@ -282,5 +287,35 @@ export class VersionData {
     return this
   }
 
+  describePatch(patch: number, desc: string): VersionData {
+    if (patch > this.numberOfPatches) {
+      throw new Error(`cannot work on patch ${patch}; there only ${this.numberOfPatches} patches in total!`)
+    }
+
+    const file = this.getPatchDescriptionPath(patch)
+    fs.writeFileSync(file, desc)
+    return this
+  }
+
+  getPatchDescription(patch: number): string | undefined {
+    const fileName = this.getPatchDescriptionPath(patch)
+    if (fs.existsSync(fileName)) {
+      return fs.readFileSync(fileName).toString()
+    }
+    return undefined
+  }
+
+  listPatches(): string[] {
+    const ret = []
+    for (let i = 1; i <= this.numberOfPatches; i++) {
+      const description = this.getPatchDescription(i)
+      if (description === undefined) {
+        ret.push('<no description>')
+      } else {
+        ret.push(description)
+      }
+    }
+    return ret
+  }
 }
 
