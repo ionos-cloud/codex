@@ -50,11 +50,13 @@ export default class Edit extends Command {
       });
 
       const answer = await prompt.run()
-      ui.info(`answer: ${answer}`)
 
       if (answer) {
+        ui.warning(`removing file ${file}`)
         fs.unlinkSync(file)
         versionData.setIdle().saveState()
+      } else {
+        ui.info('bailing out')
       }
       return
     }

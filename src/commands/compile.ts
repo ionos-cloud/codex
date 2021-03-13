@@ -43,7 +43,7 @@ export default class Compile extends Command {
       content = versionData.compile(versionData.getNumberOfPatches())
     } catch (error) {
       if (error instanceof PatchError) {
-        fs.writeFileSync(output, content)
+        fs.writeFileSync(output, error.content)
         versionData.setState({
           mode: Mode.EDIT,
           status: Status.PATCH_FAILED,
