@@ -5,6 +5,8 @@ import * as vdc from '../services/vdc'
 import * as path from 'path'
 import * as swagger from './swagger'
 import * as diff from 'diff'
+import ui from './ui'
+import { PatchError } from '../exceptions/patch-error'
 
 export enum Mode {
   IDLE,
@@ -32,23 +34,23 @@ export class VersionData {
   static jsonIndent = 2
   static stateFileName = 'state.json'
 
-  readonly #version: number
-  #baseline = ''
-  #baselineJson: Record<string, any> = {}
-  #numberOfPatches = 0
-  #versionPatchLevel = 0
-  #state: VersionState = {
+  readonly version: number
+  baseline = ''
+  baselineJson: Record<string, any> = {}
+  numberOfPatches = 0
+  versionPatchLevel = 0
+  state: VersionState = {
     mode: Mode.IDLE,
     status: Status.OK,
     data: {}
   }
 
   constructor(version: number) {
-    this.#version = version
+    this.version = version
   }
 
   public getVersionPath(): string {
-    return `${VersionData.dir}/${VersionData.versionPrefix}${this.#version}`
+    return `${VersionData.dir}/${VersionData.versionPrefix}${this.version}`
   }
 
   public getBaselinePath(): string {
@@ -67,48 +69,90 @@ export class VersionData {
     return `${this.getVersionPath()}/${VersionData.stateFileName}`
   }
 
-  public setState(state: VersionState) {
-    fs.writeFileSync(this.getStatePath(), JSON.stringify(state, null, 2))
-    this.#state = state
+  public setState(state: VersionState): VersionData {
+    this.state = state
+    return this
+  }
+
+  public setIdle(): VersionData {
+    ui.debug('setting idle state')
+    this.state = {
+      mode: Mode.IDLE,
+      status: Status.OK,
+      data: {}
+    }
+    return this
+  }
+
+  public saveState(): VersionData {
+    ui.debug('saving state')
+    fs.writeFileSync(this.getStatePath(), JSON.stringify(this.state, null, 2))
+    return this
+  }
+
+  public getState(): VersionState {
+    return this.state
   }
 
   async init() {
-    const swagger = await vdc.fetchSwaggerFile(this.#version)
 
+    ui.info(`downloading VDC production swagger for version ${this.version}`)
+    const swagger = await vdc.fetchSwaggerFile(this.version)
+
+    ui.info('creating patches dir')
     /* create patches path */
     fs.mkdirSync(this.getPatchesPath(), {recursive: true})
 
+    ui.info('creating baseline')
     /* create baseline file */
     fs.writeFileSync(this.getBaselinePath(), JSON.stringify(swagger, null, VersionData.jsonIndent))
 
-    this.setState({mode: Mode.IDLE, status: Status.OK, data: {}})
+    this.setIdle().saveState()
 
     this.load()
   }
 
   load() {
     this.validate()
-    this.#baseline = fs.readFileSync(this.getBaselinePath()).toString()
-    this.#baselineJson = JSON.parse(this.#baseline)
-    this.#versionPatchLevel = this.getVersionPatchLevel()
-    this.#numberOfPatches = this.countPatches()
+    ui.info(`working with version ${this.version}`)
+    ui.debug('loading baseline')
+    this.baseline = fs.readFileSync(this.getBaselinePath()).toString()
+
+    ui.debug('parsing baseline json')
+    this.baselineJson = JSON.parse(this.baseline)
+
+    ui.debug('parsing patch level from baseline swagger version')
+    this.versionPatchLevel = this.getVersionPatchLevel()
+
+    ui.info(`found patch level ${this.versionPatchLevel}`)
+
+    ui.debug('counting patches')
+    this.numberOfPatches = this.countPatches()
+    ui.info(`found ${this.numberOfPatches} patches`)
+
     try {
-      this.#state = JSON.parse(fs.readFileSync(this.getStatePath()).toString())
+      ui.debug('loading state')
+      this.state = JSON.parse(fs.readFileSync(this.getStatePath()).toString())
     } catch (error) {
-      throw new Error(`invalid state for version ${this.#version}: ${error.message}`)
+      throw new Error(`invalid state for version ${this.version}: ${error.message}`)
     }
+
   }
 
   getBaseline(): string {
-    return this.#baseline
+    return this.baseline
   }
 
   getBaselineJSON(): Record<string, any> {
-    return this.#baselineJson
+    return this.baselineJson
   }
 
   getVersionPatchLevel(): number {
-    return swagger.getVersionPatchLevel(this.#baselineJson)
+    return swagger.getVersionPatchLevel(this.baselineJson)
+  }
+
+  getNumberOfPatches(): number {
+    return this.numberOfPatches
   }
 
   /**
@@ -207,26 +251,35 @@ export class VersionData {
    */
   compile(level = 0): string {
 
-    /* apply patches in sequence */
-    const currentPatchLevel = this.getVersionPatchLevel()
-    const totalPatches = this.countPatches()
-
-    if (level > totalPatches) {
-      throw new Error(`patch level ${level} not found; maximum patch level is ${totalPatches}`)
+    if (level > this.numberOfPatches) {
+      throw new Error(`patch level ${level} not found; maximum patch level is ${this.numberOfPatches}`)
     }
 
-    let content = this.#baseline
-    for (let i = currentPatchLevel; i <= totalPatches; i++) {
+    ui.info('compiling baseline')
+    let content = this.baseline
+    if (level === 0) {
+      return content
+    }
+
+    for (let i = (this.versionPatchLevel > 0 ? this.versionPatchLevel : 1); i <= level; i++) {
       const patchedContent = this.applyPatch(content, i)
+      ui.debug(`applying patch ${i}`)
       if (patchedContent === false) {
+        ui.error(`failed to apply patch ${i}`)
         /* patch failed, mark the state and throw */
-        return content
+        throw new PatchError('failed to apply patch', i, content)
       }
       content = patchedContent as string
     }
 
     return content
 
+  }
+
+  createPatch(patch: number, from: string, to: string): VersionData {
+    const content = diff.createPatch('swagger.json', from, to)
+    fs.writeFileSync(this.getPatchPath(patch), content)
+    return this
   }
 
 }
