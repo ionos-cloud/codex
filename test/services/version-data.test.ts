@@ -241,7 +241,7 @@ describe('version data tests', () => {
     mock.restore()
   })
 
-  it('should compute an upstream patch correctly', async () => {
+  it('should compute an upstream update correctly', async () => {
     const versionData = mockVersionDataWith1Patch({
       swagger: '2.0',
       info: {
@@ -259,6 +259,11 @@ describe('version data tests', () => {
       }
     }
     mockVdc(versionData.version, upstream)
+
+    const mockUpstreamUpdateFileName = 'upstream-update-123.patch'
+    versionData.getNewUpstreamPatchFileName = function () {
+      return `${this.getUpstreamPath()}/${mockUpstreamUpdateFileName}`
+    }
 
     const update = await versionData.updateCheck()
     expect(update).to.not.be.undefined
@@ -281,6 +286,22 @@ describe('version data tests', () => {
 `
     )
     expect(update?.content).to.equal(JSON.stringify(upstream, null, 2))
+
+    if (update !== undefined) {
+      versionData.createNewUpstreamUpdate(update.patch)
+      versionData.updateBaseline(update.content)
+      expect(versionData.baseline).to.equal(update.content)
+      expect(versionData.baselineJson).to.deep.equal(upstream)
+      expect(fs.existsSync(versionData.getBaselinePath())).to.be.true
+      expect(fs.existsSync(versionData.getNewUpstreamPatchFileName()), 'upstream update file not created').to.be.true
+      expect(fs.readFileSync(versionData.getNewUpstreamPatchFileName()).toString()).to.equal(update?.patch)
+    }
+    mock.restore()
+  })
+
+  it('should set an idle state correctly', () => {
+    const versionData = mockVersionData(mockBaselineSDK1)
+    expect(versionData.setIdle().state).to.deep.equal(VersionData.idleState)
     mock.restore()
   })
 })

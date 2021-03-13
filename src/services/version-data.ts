@@ -40,6 +40,11 @@ export class VersionData {
   static versionPrefix = 'v'
   static jsonIndent = 2
   static stateFileName = 'state.json'
+  static idleState: VersionState = {
+    mode: Mode.IDLE,
+    status: Status.OK,
+    data: {}
+  }
 
   readonly version: number
   baseline = ''
@@ -91,11 +96,7 @@ export class VersionData {
 
   public setIdle(): VersionData {
     ui.debug('setting idle state')
-    this.state = {
-      mode: Mode.IDLE,
-      status: Status.OK,
-      data: {}
-    }
+    this.state = VersionData.idleState
     return this
   }
 
@@ -103,10 +104,6 @@ export class VersionData {
     ui.debug(`saving state: ${JSON.stringify(this.state)}`)
     fs.writeFileSync(this.getStatePath(), JSON.stringify(this.state, null, 2))
     return this
-  }
-
-  public getState(): VersionState {
-    return this.state
   }
 
   async init() {
@@ -356,11 +353,12 @@ export class VersionData {
 
       let patch = ''
       if (upstreamPatchLevel > 0) {
-        const compiled = this.compile(upstreamPatchLevel)
-        patch = diff.createPatch('swagger.json', JSON.stringify(compiled, null, 2), normalizedUpstream)
+        const compiled = JSON.stringify(JSON.parse(this.compile(upstreamPatchLevel)), null, 2)
+        patch = diff.createPatch('swagger.json', compiled, normalizedUpstream)
+      } else {
+        patch = diff.createPatch('swagger.json', normalizedBaseline, normalizedUpstream)
       }
 
-      patch = diff.createPatch('swagger.json', normalizedBaseline, normalizedUpstream)
       return {
         patch,
         content: normalizedUpstream
@@ -397,6 +395,9 @@ export class VersionData {
 
   updateBaseline(content: string) {
     fs.writeFileSync(this.getBaselinePath(), content)
+
+    this.baseline = content
+    this.baselineJson = JSON.parse(content)
   }
 }
 
