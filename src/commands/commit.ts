@@ -1,6 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import runConfig from '../services/run-config'
-import { Mode, Status, VersionData } from '../services/version-data'
+import { Mode, VersionData } from '../services/version-data'
 import ui from '../services/ui'
 import * as fs from 'fs'
 import { PatchError } from '../exceptions/patch-error'

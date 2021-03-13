@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import cli from 'cli-ux'
 import runConfig from './run-config'
 
 function warning(msg: string) {
