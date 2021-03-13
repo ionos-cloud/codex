@@ -8,6 +8,7 @@ import * as diff from 'diff'
 import ui from './ui'
 import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
+import * as json from './json'
 
 export enum Mode {
   IDLE,
@@ -101,7 +102,6 @@ export class VersionData {
 
   async init() {
 
-    ui.info(`downloading VDC production swagger for version ${this.version}`)
     const swagger = await vdc.fetchSwaggerFile(this.version)
 
     ui.info('creating patches dir')
@@ -316,6 +316,16 @@ export class VersionData {
       }
     }
     return ret
+  }
+
+  async updateCheck(): string | undefined {
+  
+    const upstream = await vdc.fetchSwaggerFile(this.version)
+
+    const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
+    if (this.versionPatchLevel > upstreamPatchLevel) {
+      throw new Error(`illegal state found: baseline patch level (${this.versionPatchLevel}) is greater than the vdc patch level (${upstreamPatchLevel})`)
+    }
   }
 }
 

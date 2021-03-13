@@ -1,4 +1,5 @@
 import axios from 'axios'
+import ui from './ui'
 
 export const host = 'https://api.ionos.com'
 export const basePath = 'cloudapi'
@@ -13,7 +14,9 @@ export function getSwaggerUrl(version: number): string {
 }
 
 export async function fetchSwaggerFile(version: number): Promise<Record<string, any>> {
-  const response = await axios.get(getSwaggerUrl(version))
+  const url = getSwaggerUrl(version)
+  ui.debug(`downloading vdc swagger from ${url}`)
+  const response = await axios.get(url)
   if (response.status !== 200) {
     throw new Error(`swagger file not found for version ${version}`)
   }
