@@ -27,6 +27,23 @@ describe('version data tests', () => {
 
     return versionData
   }
+  const mockVersionDataWith1Patch = (baseline: Record<string, any>) => {
+    const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
+
+    const version = 5
+    const versionData = new VersionData(version)
+
+    mock({
+      [versionData.getBaselinePath()]: JSON.stringify(baseline),
+      [versionData.getStatePath()]: JSON.stringify(state),
+      [versionData.getPatchPath(1)]: 'foo',
+      [versionData.getUpstreamPath()]: {}
+    })
+
+    versionData.load()
+
+    return versionData
+  }
 
   const mockVdc = (version: number, content: Record<string, any>) =>
     nock(vdc.host)
@@ -221,6 +238,49 @@ describe('version data tests', () => {
     chai.use(chaiAsPromised)
     expect(versionData.updateCheck()).to.eventually.be.rejectedWith(Error)
 
+    mock.restore()
+  })
+
+  it('should compute an upstream patch correctly', async () => {
+    const versionData = mockVersionDataWith1Patch({
+      swagger: '2.0',
+      info: {
+        description: 'Some description',
+        version: '5.0',
+        title: 'CLOUD API'
+      }
+    })
+    const upstream = {
+      swagger: '2.0',
+      info: {
+        description: 'Some description',
+        version: '5.0-SDK.1',
+        title: 'CLOUD API changed'
+      }
+    }
+    mockVdc(versionData.version, upstream)
+
+    const update = await versionData.updateCheck()
+    expect(update).to.not.be.undefined
+    expect(update?.patch).to.equal(`Index: swagger.json
+===================================================================
+--- swagger.json
++++ swagger.json
+@@ -1,8 +1,8 @@
+ {
+   "swagger": "2.0",
+   "info": {
+     "description": "Some description",
+-    "version": "5.0",
+-    "title": "CLOUD API"
++    "version": "5.0-SDK.1",
++    "title": "CLOUD API changed"
+   }
+ }
+\\ No newline at end of file
+`
+    )
+    expect(update?.content).to.equal(JSON.stringify(upstream, null, 2))
     mock.restore()
   })
 })
