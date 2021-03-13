@@ -32,12 +32,13 @@ export default class Status extends Command {
         }
 
         if (flags.reset) {
-          const { Confirm } = require('enquirer')
-          const prompt = new Confirm({
-            name: 'question',
-            message: 'Are you sure you want to reset the internal state to idle?'
+          const { Toggle } = require('enquirer')
+          const prompt = new Toggle({
+            message: 'Are you sure you want to reset the internal state to idle?',
+            enabled: 'Yes',
+            disabled: 'No'
           })
-          if (prompt.run()) {
+          if (await prompt.run()) {
             ui.info('setting internal state to idle')
             versionData.setIdle().saveState()
           }

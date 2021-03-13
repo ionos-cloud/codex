@@ -42,11 +42,12 @@ export default class Edit extends Command {
       ui.info(`aborting edit session for patch ${patchBeingEdited}`)
       ui.warning(`file ${file} will be erased`)
 
-      const { Confirm } = require('enquirer')
+      const { Toggle } = require('enquirer')
 
-      const prompt = new Confirm({
-        name: 'question',
-        message: 'Are you sure you want to abort the current edit session?'
+      const prompt = new Toggle({
+        message: 'Are you sure you want to abort the current edit session?',
+        enabled: 'Yes',
+        disabled: 'No'
       });
 
       const answer = await prompt.run()

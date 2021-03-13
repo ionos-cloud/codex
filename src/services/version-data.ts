@@ -111,6 +111,7 @@ export class VersionData {
 
   async init() {
 
+    ui.info('downloading vdc swagger file')
     const swagger = await vdc.fetchSwaggerFile(this.version)
 
     ui.info('creating patches dir')
