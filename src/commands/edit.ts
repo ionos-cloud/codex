@@ -88,6 +88,9 @@ export default class Edit extends Command {
       }
     } else {
       patchToEdit = flags.patch
+      if (patchToEdit <= versionPatchLevel) {
+        throw new Error(`cannot edit a change (patch) that was already included in the baseline; baseline patch level is ${versionPatchLevel}`)
+      }
     }
 
     const output = flags.output || `swagger-v${flags.version}.json`

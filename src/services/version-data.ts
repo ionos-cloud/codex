@@ -281,7 +281,7 @@ export class VersionData {
       return content
     }
 
-    for (let i = (this.versionPatchLevel > 0 ? this.versionPatchLevel : 1); i <= level; i++) {
+    for (let i = (this.versionPatchLevel > 0 ? this.versionPatchLevel + 1 : 1); i <= level; i++) {
       const patchedContent = this.applyPatch(content, i)
       ui.debug(`applying patch ${i}`)
       if (patchedContent === false) {
@@ -373,12 +373,12 @@ export class VersionData {
     const padZeros =
       (...numbers: number[]): string =>
         numbers.reduce(
-          (prev: string, current: number): string => `${prev}${current > 0 ? current : `0${current}`}`, ''
+          (prev: string, current: number): string => `${prev}${current > 10 ? current : `0${current}`}`, ''
         )
     const timestamp = padZeros(
       now.getFullYear(),
-      now.getMonth(),
-      now.getDay(),
+      now.getMonth() + 1,
+      now.getDate(),
       now.getHours(),
       now.getMinutes(),
       now.getSeconds()

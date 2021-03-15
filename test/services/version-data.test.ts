@@ -304,4 +304,9 @@ describe('version data tests', () => {
     expect(versionData.setIdle().state).to.deep.equal(VersionData.idleState)
     mock.restore()
   })
+
+  it('should generate a correct upstream patch file name', () => {
+    const versionData = mockVersionData(mockBaselineSDK1)
+    expect(versionData.getNewUpstreamPatchFileName().length).to.be.greaterThan(0)
+  })
 })

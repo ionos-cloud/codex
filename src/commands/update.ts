@@ -1,9 +1,10 @@
-import {Command, flags} from '@oclif/command'
+import { Command, flags } from '@oclif/command'
 
-import { VersionData } from '../services/version-data'
+import { Mode, VersionData } from '../services/version-data'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
 import vdc from '../services/vdc'
+import * as fs from 'fs'
 
 export default class Update extends Command {
   static description = 'update baseline from vdc'
@@ -27,6 +28,10 @@ export default class Update extends Command {
       description: 'answer yes to all questions; useful in CI automation',
       default: false
     }),
+    output: flags.string({
+      char: 'o',
+      required: false
+    }),
     'vdc-host': flags.string({description: 'vdc host'})
   }
 
@@ -47,7 +52,19 @@ export default class Update extends Command {
     }
 
     ui.warning('updates found in VDC swagger')
-    const updateFile = versionData.createNewUpstreamUpdate(update?.patch)
+
+    if (versionData.state.mode === Mode.EDIT) {
+      throw new Error('you are currently in edit mode and cannot update the baseline')
+    }
+
+    let updateFile = ''
+    if (flags.output === undefined) {
+      updateFile = versionData.createNewUpstreamUpdate(update?.patch)
+    } else {
+      updateFile = flags.output
+      fs.writeFileSync(flags.output, update?.patch)
+    }
+
     ui.info(`upstream update saved to ${updateFile}`)
 
     if (flags.check) {
