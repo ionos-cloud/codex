@@ -4,6 +4,9 @@ import { Mode, VersionData } from '../services/version-data'
 import ui from '../services/ui'
 import * as fs from 'fs'
 import { PatchError } from '../exceptions/patch-error'
+import '../services/config'
+import * as auth from '../services/auth'
+import * as locking from '../services/locking'
 
 export default class Commit extends Command {
   static description = 'commit changes into the patch being edited'
@@ -35,10 +38,13 @@ export default class Commit extends Command {
     if (patchBeingEdited === 0) {
       throw new Error('invalid state: patch being edited is patch number 0')
     }
+
     const workFile = versionData.state.data.file
     if (!fs.existsSync(workFile)) {
       throw new Error(`work file ${workFile} not found!`)
     }
+
+    await auth.check()
 
     let prevContent = ''
     try {
@@ -54,6 +60,13 @@ export default class Commit extends Command {
       }
     }
 
+    /* should we unlock later? */
+    try {
+      await locking.unlock()
+    } catch (error) {
+      ui.warning(`an error occurred while trying to release the lock; continuing`)
+    }
+
     ui.info(`saving patch ${patchBeingEdited}`)
     versionData.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())
 
@@ -65,5 +78,6 @@ export default class Commit extends Command {
 
     ui.info(`removing work file ${workFile}`)
     fs.unlinkSync(workFile)
+
   }
 }

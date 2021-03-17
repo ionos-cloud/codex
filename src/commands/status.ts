@@ -4,6 +4,7 @@ import { Mode, VersionData, Status as VersionStatus } from '../services/version-
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
 import chalk from 'chalk'
+import '../services/config'
 
 export default class Status extends Command {
   static description = 'display status information'
@@ -15,6 +16,10 @@ export default class Status extends Command {
     version: flags.integer({char: 'v', default: VersionData.defaultVersion}),
     debug: flags.boolean({char: 'd', default: false}),
     reset: flags.boolean({char: 'r', default: false})
+  }
+
+  protected async catch(err: any) {
+    ui.error(err.message)
   }
 
   async run() {

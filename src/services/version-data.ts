@@ -8,6 +8,7 @@ import * as diff from 'diff'
 import ui from './ui'
 import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
+import { Config } from './config'
 
 export enum Mode {
   IDLE,
@@ -32,7 +33,6 @@ export interface UpstreamUpdateInfo {
 
 export class VersionData {
 
-  static dir = '.swagman'
   static defaultVersion = 5
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
@@ -62,7 +62,7 @@ export class VersionData {
   }
 
   public getVersionPath(): string {
-    return `${VersionData.dir}/${VersionData.versionPrefix}${this.version}`
+    return `${Config.dir}/${VersionData.versionPrefix}${this.version}`
   }
 
   public getBaselinePath(): string {
@@ -208,8 +208,8 @@ export class VersionData {
    */
   public validate(): void {
 
-    if (!fs.existsSync(VersionData.dir)) {
-      throw new Error(`${VersionData.dir} not found`)
+    if (!fs.existsSync(Config.dir)) {
+      throw new Error(`${Config.dir} not found`)
     }
 
     const versionPath = this.getVersionPath()
@@ -303,10 +303,6 @@ export class VersionData {
   }
 
   describePatch(patch: number, desc: string): VersionData {
-    if (patch > this.numberOfPatches) {
-      throw new Error(`cannot work on patch ${patch}; there only ${this.numberOfPatches} patches in total!`)
-    }
-
     const file = this.getPatchDescriptionPath(patch)
     fs.writeFileSync(file, desc)
     return this

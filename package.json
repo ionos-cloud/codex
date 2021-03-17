@@ -63,6 +63,7 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@ionos-cloud/swagman": "file:ionos-cloud-swagman-0.0.0.tgz",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",

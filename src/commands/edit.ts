@@ -6,6 +6,10 @@ import * as fs from 'fs'
 import chalk from 'chalk'
 import { PatchError } from '../exceptions/patch-error'
 
+import '../services/config'
+import * as locking from '../services/locking'
+import * as auth from '../services/auth'
+
 export default class Edit extends Command {
   static description = 'describe the command here'
 
@@ -31,6 +35,8 @@ export default class Edit extends Command {
     const versionData = new VersionData(flags.version)
     versionData.load()
 
+    await auth.check()
+
     if (flags.abort) {
       if (versionData.state.mode !== Mode.EDIT) {
         throw new Error('no edit session found; nothing to abort')
@@ -53,6 +59,7 @@ export default class Edit extends Command {
       const answer = await prompt.run()
 
       if (answer) {
+        await locking.unlock()
         ui.warning(`removing file ${file}`)
         fs.unlinkSync(file)
         versionData.setIdle().saveState()
@@ -97,6 +104,8 @@ export default class Edit extends Command {
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)
     }
+
+    await locking.lock()
 
     let compiled = ''
     try {
