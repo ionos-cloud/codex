@@ -1,10 +1,10 @@
 {
   "name": "@ionos-cloud/swagman",
   "description": "VDC & SDK swagger management tool",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Florin Mihalache @mflorin",
   "bin": {
-    "swagman": "./bin/run"
+    "swagman": "bin/run"
   },
   "bugs": "https://github.com/ionos-cloud/swagman/issues",
   "devDependencies": {
