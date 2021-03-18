@@ -15,30 +15,74 @@ VDC &amp; SDK swagger management tool
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @ionos-cloud/swagman
-$ swagman COMMAND
+$ npm install -g @ionos-cloud/codex
+$ codex COMMAND
 running command...
-$ swagman (-v|--version|version)
-@ionos-cloud/swagman/1.0.0 darwin-x64 node-v14.15.4
-$ swagman --help [COMMAND]
+$ codex (-v|--version|version)
+@ionos-cloud/codex/1.0.1 darwin-x64 node-v14.15.4
+$ codex --help [COMMAND]
 USAGE
-  $ swagman COMMAND
+  $ codex COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`swagman diff FILE1 FILE2`](#swagman-diff-file1-file2)
-* [`swagman help [COMMAND]`](#swagman-help-command)
-* [`swagman normalize FILE`](#swagman-normalize-file)
+* [`codex commit`](#codex-commit)
+* [`codex compile`](#codex-compile)
+* [`codex diff FILE1 FILE2`](#codex-diff-file1-file2)
+* [`codex edit`](#codex-edit)
+* [`codex help [COMMAND]`](#codex-help-command)
+* [`codex init`](#codex-init)
+* [`codex lock`](#codex-lock)
+* [`codex login`](#codex-login)
+* [`codex normalize FILE`](#codex-normalize-file)
+* [`codex patch`](#codex-patch)
+* [`codex status`](#codex-status)
+* [`codex unlock`](#codex-unlock)
+* [`codex update`](#codex-update)
 
-## `swagman diff FILE1 FILE2`
+## `codex commit`
+
+commit changes into the patch being edited
+
+```
+USAGE
+  $ codex commit
+
+OPTIONS
+  -d, --debug
+  -h, --help             show CLI help
+  -m, --message=message
+  -v, --version=version  [default: 5]
+```
+
+_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/commit.ts)_
+
+## `codex compile`
+
+compile baseline plus all the patches
+
+```
+USAGE
+  $ codex compile
+
+OPTIONS
+  -d, --debug
+  -h, --help             show CLI help
+  -o, --output=output
+  -v, --version=version  [default: 5]
+```
+
+_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/compile.ts)_
+
+## `codex diff FILE1 FILE2`
 
 compute a diff between two json files, normalizing them first
 
 ```
 USAGE
-  $ swagman diff FILE1 FILE2
+  $ codex diff FILE1 FILE2
 
 ARGUMENTS
   FILE1  first file
@@ -48,15 +92,34 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/swagman/blob/v1.0.0/src/commands/diff.ts)_
+_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/diff.ts)_
 
-## `swagman help [COMMAND]`
+## `codex edit`
 
-display help for swagman
+describe the command here
 
 ```
 USAGE
-  $ swagman help [COMMAND]
+  $ codex edit
+
+OPTIONS
+  -a, --abort
+  -d, --debug
+  -h, --help             show CLI help
+  -o, --output=output
+  -p, --patch=patch
+  -v, --version=version  [default: 5]
+```
+
+_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/edit.ts)_
+
+## `codex help [COMMAND]`
+
+display help for codex
+
+```
+USAGE
+  $ codex help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for
@@ -67,13 +130,71 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
-## `swagman normalize FILE`
+## `codex init`
+
+initialize a codex project in the current directory
+
+```
+USAGE
+  $ codex init
+
+OPTIONS
+  -d, --debug
+  -h, --help             show CLI help
+  -v, --version=version  [default: 5]
+  --vdc-host=vdc-host    vdc host
+
+EXAMPLE
+  $ codex init
+```
+
+_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/init.ts)_
+
+## `codex lock`
+
+acquire the global codex lock
+
+```
+USAGE
+  $ codex lock
+
+OPTIONS
+  -d, --debug
+  -h, --help   show CLI help
+
+EXAMPLE
+  $ codex lock
+```
+
+_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/lock.ts)_
+
+## `codex login`
+
+authenticate using the Inside credentials
+
+```
+USAGE
+  $ codex login
+
+OPTIONS
+  -d, --debug
+  -h, --help               show CLI help
+  -p, --password=password  password to login with
+  -u, --username=username  username to login with
+
+EXAMPLE
+  $ codex login
+```
+
+_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/login.ts)_
+
+## `codex normalize FILE`
 
 describe the command here
 
 ```
 USAGE
-  $ swagman normalize FILE
+  $ codex normalize FILE
 
 ARGUMENTS
   FILE  file to normalize
@@ -83,5 +204,82 @@ OPTIONS
   -i, --indent=indent  [default: 2]
 ```
 
-_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/swagman/blob/v1.0.0/src/commands/normalize.ts)_
+_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/normalize.ts)_
+
+## `codex patch`
+
+listing patches or editing their description
+
+```
+USAGE
+  $ codex patch
+
+OPTIONS
+  -d, --debug
+  -h, --help             show CLI help
+  -l, --list
+  -m, --message=message
+  -n, --number=number    patch to set message for; defaults to last patch
+  -v, --version=version  [default: 5]
+```
+
+_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/patch.ts)_
+
+## `codex status`
+
+display status information
+
+```
+USAGE
+  $ codex status
+
+OPTIONS
+  -d, --debug
+  -h, --help             show CLI help
+  -r, --reset
+  -v, --version=version  [default: 5]
+
+EXAMPLE
+  $ codex status
+```
+
+_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/status.ts)_
+
+## `codex unlock`
+
+forcefully release the lock
+
+```
+USAGE
+  $ codex unlock
+
+OPTIONS
+  -d, --debug
+  -h, --help   show CLI help
+
+EXAMPLE
+  $ codex unlock
+```
+
+_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/unlock.ts)_
+
+## `codex update`
+
+update baseline from vdc
+
+```
+USAGE
+  $ codex update
+
+OPTIONS
+  -c, --check            check if there's an update without actually performing the update
+  -d, --debug            show debug information
+  -h, --help             show CLI help
+  -o, --output=output
+  -v, --version=version  [default: 5] swagger version to work on
+  -y, --yes              answer yes to all questions; useful in CI automation
+  --vdc-host=vdc-host    vdc host
+```
+
+_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v1.0.1/src/commands/update.ts)_
 <!-- commandsstop -->
