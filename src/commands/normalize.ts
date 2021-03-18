@@ -14,6 +14,7 @@ export default class Normalize extends Command {
 
   protected async catch(err: any) {
     ui.error(err.message)
+    this.exit(1)
   }
 
   async run() {

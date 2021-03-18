@@ -63,5 +63,6 @@ export default class Patch extends Command {
 
   protected async catch(err: any) {
     ui.error(err.message)
+    this.exit(1)
   }
 }

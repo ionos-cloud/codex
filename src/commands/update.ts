@@ -83,5 +83,6 @@ export default class Update extends Command {
 
   protected async catch(err: any) {
     ui.error(err.message)
+    this.exit(1)
   }
 }
