@@ -4,9 +4,7 @@
 VDC &amp; SDK swagger management tool
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/@ionos-cloud/swagman.svg)](https://npmjs.org/package/@ionos-cloud/swagman)
-[![Downloads/week](https://img.shields.io/npm/dw/@ionos-cloud/swagman.svg)](https://npmjs.org/package/@ionos-cloud/swagman)
-[![License](https://img.shields.io/npm/l/@ionos-cloud/swagman.svg)](https://github.com/ionos-cloud/swagman/blob/master/package.json)
+[![CI](https://github.com/ionos-cloud/codex/actions/workflows/ci.yml/badge.svg)](https://github.com/ionos-cloud/codex/actions/workflows/ci.yml)
 
 <!-- toc -->
 * [Usage](#usage)
