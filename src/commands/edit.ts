@@ -124,7 +124,7 @@ export default class Edit extends Command {
             file: output
           }
         }).saveState()
-        throw new Error(`applying patch ${versionData.state.data.patch} failed; please edit ${output} and than run 'swagman commit' to fix the patch`)
+        throw new Error(`applying patch ${versionData.state.data.patch} failed; please edit ${output} and than run 'codex commit' to fix the patch`)
       } else {
         throw error
       }
@@ -139,7 +139,7 @@ export default class Edit extends Command {
         file: output
       }
     }).saveState()
-    ui.info(`baseline with all patches applied saved as ${chalk.blueBright(output)}; run '${chalk.yellowBright('swagman commit')}' when you're done`)
+    ui.info(`baseline with all patches applied saved as ${chalk.blueBright(output)}; run '${chalk.yellowBright('codex commit')}' when you're done`)
     ui.info(`changes will be saved in patch number ${patchToEdit}`)
 
   }

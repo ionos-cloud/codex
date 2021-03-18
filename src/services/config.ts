@@ -47,6 +47,12 @@ export class Config {
     fs.writeFileSync(this.getConfigFileName(), JSON.stringify(this.data, null, 2))
   }
 
+  init() {
+    if (!fs.existsSync(this.getConfigFileName())) {
+      this.save()
+    }
+  }
+
   check() {
     if (!fs.existsSync(Config.dir)) {
       throw new Error('this is not a codex project; please run \'codex init\'')

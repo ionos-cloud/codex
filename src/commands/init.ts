@@ -34,7 +34,7 @@ export default class Init extends Command {
 
     const versionData = new VersionData(flags.version)
     await versionData.init()
-    await config.save()
+    config.init()
 
   }
 }

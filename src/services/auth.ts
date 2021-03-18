@@ -71,7 +71,7 @@ export async function performLogin() {
   /* save token in config */
   config.data.token = await login(answer.username, answer.password)
   config.data.username = answer.username
-  config.save()
+  await config.save()
 
 }
 

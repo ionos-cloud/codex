@@ -9,7 +9,7 @@ import config from '../services/config'
 export default class Status extends Command {
   static description = 'display status information'
 
-  static examples = [ '$ swagman status' ]
+  static examples = [ '$ codex status' ]
 
   static flags = {
     help: flags.help({char: 'h'}),

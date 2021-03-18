@@ -82,6 +82,5 @@ export default class Login extends Command {
     config.save()
 
     ui.success(`successfully logged in as ${config.data.username}`)
-    ui.eol()
   }
 }
