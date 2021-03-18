@@ -2,7 +2,6 @@ import { expect } from 'chai'
 import * as swagger from '../../src/services/swagger'
 import mock = require('mock-fs')
 import * as fs from 'fs'
-import { file } from 'mock-fs'
 
 describe('swagger tests', function () {
   it('should get the patch level', () => {
