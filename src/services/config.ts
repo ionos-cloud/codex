@@ -1,35 +1,57 @@
-import fs from 'fs'
-import * as vdc from '../services/vdc'
+import * as fs from 'fs'
+import * as path from 'path'
+import ui from './ui'
 
-export const dir = '.swagman'
-export const defaultVersion = 5
-export const baselineFileName = 'baseline.json'
-export const patchesDir = 'patches'
-export const versionPrefix = 'v'
-export const jsonIndent = 2
-
-export function getVersionPath(version = defaultVersion): string {
-  return `${dir}/${versionPrefix}${version}`
+export interface ConfigModel {
+  authUrl: string;
+  lockUrl: string;
+  username: string;
+  token: string;
 }
 
-export function getBaselinePath(version = defaultVersion): string {
-  return `${getVersionPath(version)}/${baselineFileName}`
+export const defaultConfig: ConfigModel = {
+  authUrl: 'https://dashboard.platform.ionos.org/gph--service-auth',
+  lockUrl: 'https://dashboard.platform.ionos.org/gph--service-lock',
+  username: '',
+  token: ''
 }
 
-export function getPatchesPath(version = defaultVersion): string {
-  return `${getVersionPath(version)}/${patchesDir}`
+export class Config {
+  static dir = '.codex'
+  static fileName = 'config.json'
+
+  data: ConfigModel = defaultConfig
+
+  getConfigFileName(): string {
+    return path.resolve(Config.dir, Config.fileName)
+  }
+
+  load() {
+    try {
+      if (fs.existsSync(this.getConfigFileName())) {
+        ui.info('loading config')
+        const cfg = JSON.parse(fs.readFileSync(this.getConfigFileName()).toString())
+        this.data = {
+          ...this.data,
+          ...cfg
+        }
+      } else {
+        ui.warning('config file not found')
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  save() {
+    fs.writeFileSync(this.getConfigFileName(), JSON.stringify(this.data, null, 2))
+  }
+
+  check() {
+    if (!fs.existsSync(Config.dir)) {
+      throw new Error('this is not a codex project; please run \'codex init\'')
+    }
+  }
 }
 
-export async function init() {
-  const swagger = await vdc.fetchSwaggerFile()
-
-  /* create patches path */
-  fs.mkdirSync(getPatchesPath(), { recursive: true })
-
-  /* create baseline file */
-  fs.writeFileSync(getBaselinePath(), JSON.stringify(swagger, null, jsonIndent))
-}
-
-export function getPatchPath(version: number, patchNumber: number): string {
-  return `${getPatchesPath(version)}/${patchNumber}.patch`
-}
+export default new Config()

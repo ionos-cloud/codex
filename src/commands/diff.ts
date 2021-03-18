@@ -1,5 +1,6 @@
 import {Command, flags} from '@oclif/command'
 import * as json from '../services/json'
+import ui from '../services/ui'
 
 export default class Diff extends Command {
   static description = 'compute a diff between two json files, normalizing them first'
@@ -20,6 +21,10 @@ export default class Diff extends Command {
       description: 'second file'
     }
   ]
+
+  protected async catch(err: any) {
+    ui.error(err.message)
+  }
 
   async run() {
     const {args} = this.parse(Diff)

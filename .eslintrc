@@ -15,6 +15,7 @@
     "lines-between-class-members": "off",
     "padded-blocks": "off",
     "no-trailing-spaces": "off",
-    "eol-last": "off"
+    "eol-last": "off",
+    "array-bracket-spacing": "off"
   }
 }
