@@ -1,12 +1,10 @@
 import chai, { expect } from 'chai'
-import { VersionData, Mode, Status } from '../../src/services/version-data'
+import { Codex, Mode, Status } from '../../src/services/codex'
 import vdc from '../../src/services/vdc'
 import fs = require('fs')
 import mock = require('mock-fs')
 import nock = require('nock')
 import chaiAsPromised from 'chai-as-promised'
-
-import { Config } from '../../src/services/config'
 
 describe('version data tests', () => {
 
@@ -16,7 +14,7 @@ describe('version data tests', () => {
     const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
 
     const version = 5
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
 
     mock({
       [versionData.getBaselinePath()]: JSON.stringify(baseline),
@@ -33,7 +31,7 @@ describe('version data tests', () => {
     const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
 
     const version = 5
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
 
     mock({
       [versionData.getBaselinePath()]: JSON.stringify(baseline),
@@ -57,14 +55,13 @@ describe('version data tests', () => {
     const content = {info: {version: 'v5.0-SDK.1'}}
     const version = 8
 
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
     nock(vdc.host)
       .get(vdc.getSwaggerPath(version))
       .reply(200, JSON.stringify(content), {'Content-Type': 'application/json'})
 
     mock()
     await versionData.init()
-    expect(fs.existsSync(Config.dir)).to.eq(true)
     expect(fs.existsSync(versionData.getVersionPath())).to.eq(true)
     expect(fs.existsSync(versionData.getPatchesPath())).to.eq(true)
     expect(fs.existsSync(versionData.getBaselinePath())).to.eq(true)
@@ -77,7 +74,7 @@ describe('version data tests', () => {
   it('should count patches correctly', () => {
     const version = 5
 
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
     mock(
       {
         [versionData.getPatchPath(1)]: 'foo',
@@ -101,7 +98,7 @@ describe('version data tests', () => {
 
   it('should return 0 when there are no patches', () => {
     const version = 5
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
     mock(
       {
         [`${versionData.getPatchesPath()}/foo.txt`]: 'bar'
@@ -113,7 +110,7 @@ describe('version data tests', () => {
 
   it('should throw when patches are out of order', () => {
     const version = 5
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
 
     mock(
       {
@@ -198,7 +195,7 @@ describe('version data tests', () => {
     const state = {mode: Mode.IDLE, status: Status.OK, data: {}}
 
     const version = 5
-    const versionData = new VersionData(version)
+    const versionData = new Codex(version)
 
     mock({
       [versionData.getBaselinePath()]: JSON.stringify(mockBaselineSDK1),
@@ -303,7 +300,7 @@ describe('version data tests', () => {
 
   it('should set an idle state correctly', () => {
     const versionData = mockVersionData(mockBaselineSDK1)
-    expect(versionData.setIdle().state).to.deep.equal(VersionData.idleState)
+    expect(versionData.setIdle().state).to.deep.equal(Codex.idleState)
     mock.restore()
   })
 

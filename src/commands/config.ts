@@ -1,6 +1,5 @@
 import config from '../services/config'
 import BaseCommand from '../base/base-command'
-import ui from '../services/ui'
 
 export default class Config extends BaseCommand {
   static description = 'codex configuration management'

@@ -1,43 +1,38 @@
-import { Command, flags } from '@oclif/command'
-import runConfig from '../services/run-config'
-import { Mode, VersionData } from '../services/version-data'
+import { flags } from '@oclif/command'
+import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import * as fs from 'fs'
 import { PatchError } from '../exceptions/patch-error'
-import config from '../services/config'
 import * as auth from '../services/auth'
 import * as locking from '../services/locking'
 import * as swagger from '../services/swagger'
 import BaseCommand from '../base/base-command'
+import state, { Mode } from '../services/state'
 
 export default class Commit extends BaseCommand {
   static description = 'commit changes into the patch being edited'
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    version: flags.integer({char: 'v', required: false, default: VersionData.defaultVersion}),
-    debug: flags.boolean({char: 'd', default: false}),
+    ...BaseCommand.flags,
+    version: flags.integer({char: 'v', required: false, default: Codex.defaultVersion}),
     message: flags.string({char: 'm', required: false})
   }
 
   async run() {
-    const {flags} = this.parse(Commit)
 
-    runConfig.debug = flags.debug
+    const codex = new Codex(this.flags.version)
+    await codex.load()
 
-    const versionData = new VersionData(flags.version)
-    versionData.load()
-
-    if (versionData.state.mode !== Mode.EDIT) {
-      throw new Error(`nothing to commit; run 'codex edit --version ${flags.version} first`)
+    if (state.mode !== Mode.EDIT) {
+      throw new Error(`nothing to commit; run 'codex edit --version ${this.flags.version} first`)
     }
 
-    const patchBeingEdited = versionData.state.data.patch
+    const patchBeingEdited = state.data.patch
     if (patchBeingEdited === 0) {
       throw new Error('invalid state: patch being edited is patch number 0')
     }
 
-    const workFile = versionData.state.data.file
+    const workFile = state.data.file
     if (!fs.existsSync(workFile)) {
       throw new Error(`work file ${workFile} not found!`)
     }
@@ -46,7 +41,7 @@ export default class Commit extends BaseCommand {
 
     let prevContent = ''
     try {
-      prevContent = versionData.compile(versionData.state.data.patch - 1)
+      prevContent = await codex.compile(state.data.patch - 1)
     } catch (error) {
       if (error instanceof PatchError) {
         const failedPatch = error.patch
@@ -69,13 +64,13 @@ export default class Commit extends BaseCommand {
     swagger.fixPatchLevel(workFile, patchBeingEdited)
 
     ui.info(`saving patch ${patchBeingEdited}`)
-    versionData.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())
+    await codex.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())
 
-    if (flags.message !== undefined) {
+    if (this.flags.message !== undefined) {
       ui.info('saving patch description')
-      versionData.describePatch(patchBeingEdited, flags.message)
+      await codex.describePatch(patchBeingEdited, this.flags.message)
     }
-    versionData.setIdle().saveState()
+    state.setIdle().save()
 
     ui.info(`removing work file ${workFile}`)
     fs.unlinkSync(workFile)

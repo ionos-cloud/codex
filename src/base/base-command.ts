@@ -2,6 +2,7 @@ import { Command, flags } from '@oclif/command'
 import config from '../services/config'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
+import state from '../services/state'
 
 export default abstract class BaseCommand extends Command {
   flags: any
@@ -21,6 +22,7 @@ export default abstract class BaseCommand extends Command {
     runConfig.debug = this.flags.debug
 
     config.load(this.config.configDir)
+    state.load()
   }
 
   async catch(error: any) {

@@ -1,9 +1,7 @@
-import {Command, flags} from '@oclif/command'
+import { flags } from '@oclif/command'
 
-import { VersionData } from '../services/version-data'
-import runConfig from '../services/run-config'
+import { Codex } from '../services/codex'
 import vdc from '../services/vdc'
-import config from '../services/config'
 import BaseCommand from '../base/base-command'
 
 export default class Init extends BaseCommand {
@@ -14,23 +12,19 @@ export default class Init extends BaseCommand {
   ]
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    version: flags.integer({char: 'v', default: VersionData.defaultVersion}),
-    debug: flags.boolean({char: 'd', default: false}),
+    ...BaseCommand.flags,
+    version: flags.integer({char: 'v', default: Codex.defaultVersion}),
     'vdc-host': flags.string({description: 'vdc host'})
   }
 
   async run() {
-    const {flags} = this.parse(Init)
-    runConfig.debug = flags.debug
 
-    if (flags['vdc-host'] !== undefined) {
-      vdc.host = flags['vdc-host']
+    if (this.flags['vdc-host'] !== undefined) {
+      vdc.host = this.flags['vdc-host']
     }
 
-    const versionData = new VersionData(flags.version)
-    await versionData.init()
-    config.init()
+    const codex = new Codex(this.flags.version)
+    await codex.init()
 
   }
 }

@@ -1,6 +1,5 @@
 import { flags } from '@oclif/command'
 
-import runConfig from '../services/run-config'
 import * as auth from '../services/auth'
 import config from '../services/config'
 import ui from '../services/ui'
@@ -21,13 +20,10 @@ export default class Login extends BaseCommand {
   }
 
   async run() {
-    const {flags} = this.parse(Login)
-    runConfig.debug = flags.debug
-
     const { prompt } = require('enquirer');
 
     let username: string
-    if (flags.username === undefined) {
+    if (this.flags.username === undefined) {
       if (process.env[ionosUsernameEnvVar] === undefined) {
         /* ask for it */
         const answer = await prompt({
@@ -45,11 +41,11 @@ export default class Login extends BaseCommand {
         username = process.env[ionosUsernameEnvVar] as string
       }
     } else {
-      username = flags.username
+      username = this.flags.username
     }
 
     let password: string
-    if (flags.password === undefined) {
+    if (this.flags.password === undefined) {
       if (process.env[ionosPasswordEnvVar] === undefined) {
         /* ask for it */
         const answer = await prompt({
@@ -67,7 +63,7 @@ export default class Login extends BaseCommand {
       }
     } else {
       ui.warning(`providing your password on the command line is unsecure; you can use the ${ionosPasswordEnvVar} env variable`)
-      password = flags.password
+      password = this.flags.password
     }
 
     config.data.auth.username = username
