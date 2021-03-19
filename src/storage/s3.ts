@@ -3,6 +3,7 @@ import aws = require('aws-sdk')
 import { CodexStorage } from '../contract/codex-storage'
 import config from '../services/config'
 import ui from '../services/ui'
+import { basename } from 'path'
 
 export class S3 implements CodexStorage {
 
@@ -31,6 +32,7 @@ export class S3 implements CodexStorage {
   }
 
   protected async readFile(path: string): Promise<string> {
+    ui.debug(`reading file ${path}`)
     let data
     try {
       data = await this.s3.getObject({
@@ -99,7 +101,7 @@ export class S3 implements CodexStorage {
     await this.writeFile(this.getPatchPath(version, patch), content)
   }
 
-  readPatchDescription(version: number, patch: number): Promise<string> {
+  async readPatchDescription(version: number, patch: number): Promise<string> {
     return this.readFile(this.getPatchDescriptionPath(version, patch))
   }
 
@@ -121,10 +123,10 @@ export class S3 implements CodexStorage {
         return 0
       }
 
-      const numbers: number[] = []
       for (const entry of data.Contents) {
-        if (entry.Key === path) continue
-        const match = entry.Key?.match(/^(\d+)\.patch$/)
+        if (entry.Key === path || entry.Key === undefined) continue
+
+        const match = basename(entry.Key).match(/^(\d+)\.patch$/)
 
         if (match !== null && match !== undefined && match.length === 2) {
           numbers.push(Number(match[1]))

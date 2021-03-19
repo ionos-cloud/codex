@@ -172,11 +172,18 @@ export class Codex {
   }
 
   async getPatchDescription(patch: number): Promise<string | undefined> {
+    ui.debug(`getting patch description for ${patch}`)
     return this.storage.readPatchDescription(this.version, patch)
   }
 
   async listPatches(): Promise<string[]> {
-    const descriptions = await Promise.all(new Array(this.numberOfPatches).map((_, i) => this.getPatchDescription(i)))
+
+    const promises = []
+    for (let i = 1; i <= this.numberOfPatches; i++) {
+      promises.push(this.getPatchDescription(i))
+    }
+    const descriptions = await Promise.all(promises)
+    
     return descriptions.map((d: string | undefined) => (d === undefined) ? '<no description>' : d)
   }
 
