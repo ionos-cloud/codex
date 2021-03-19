@@ -9,7 +9,7 @@ export async function lock() {
     ui.info('acquiring lock')
     await axios.put(`${config.data.lockUrl}/trylock/${lockName}`, null, {
       headers: {
-        Authorization: config.data.token,
+        Authorization: config.data.auth.token,
         'X-Auth-Provider': 'ldap'
       }
     })
@@ -29,7 +29,7 @@ export async function unlock() {
     ui.info('releasing lock')
     await axios.put(`${config.data.lockUrl}/unlock/${lockName}`, null, {
       headers: {
-        Authorization: config.data.token,
+        Authorization: config.data.auth.token,
         'X-Auth-Provider': 'ldap'
       }
     })

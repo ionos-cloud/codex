@@ -1,13 +1,13 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 
 import { Mode, VersionData } from '../services/version-data'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
 import vdc from '../services/vdc'
 import * as fs from 'fs'
-import config from '../services/config'
+import BaseCommand from '../base/base-command'
 
-export default class Update extends Command {
+export default class Update extends BaseCommand {
   static description = 'update baseline from vdc'
   static EXIT_CODE_ON_UPDATES = 2
 
@@ -39,8 +39,6 @@ export default class Update extends Command {
   async run() {
     const {flags} = this.parse(Update)
     runConfig.debug = flags.debug
-
-    config.load()
 
     const versionData = new VersionData(flags.version)
     await versionData.load()
@@ -81,8 +79,4 @@ export default class Update extends Command {
     ui.info('baseline updated successfully')
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
 }

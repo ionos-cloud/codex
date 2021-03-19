@@ -8,7 +8,6 @@ import * as diff from 'diff'
 import ui from './ui'
 import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
-import { Config } from './config'
 
 export enum Mode {
   IDLE,
@@ -62,7 +61,7 @@ export class VersionData {
   }
 
   public getVersionPath(): string {
-    return `${Config.dir}/${VersionData.versionPrefix}${this.version}`
+    return `${VersionData.versionPrefix}${this.version}`
   }
 
   public getBaselinePath(): string {
@@ -207,10 +206,6 @@ export class VersionData {
    * @throws Error if the configuration is not valid
    */
   public validate(): void {
-
-    if (!fs.existsSync(Config.dir)) {
-      throw new Error(`${Config.dir} not found`)
-    }
 
     const versionPath = this.getVersionPath()
     if (!fs.existsSync(versionPath)) {

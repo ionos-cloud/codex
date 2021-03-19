@@ -69,8 +69,8 @@ export async function performLogin() {
   }]);
 
   /* save token in config */
-  config.data.token = await login(answer.username, answer.password)
-  config.data.username = answer.username
+  config.data.auth.token = await login(answer.username, answer.password)
+  config.data.auth.username = answer.username
   await config.save()
 
 }
@@ -79,12 +79,12 @@ export async function performLogin() {
  * check whether we have a valid token or not
  */
 export async function check() {
-  if (config.data.token.length === 0) {
+  if (config.data.auth.token.length === 0) {
     await performLogin()
     return
   }
   ui.info('validating existing auth token')
-  const valid = await validate(config.data.token)
+  const valid = await validate(config.data.auth.token)
   if (!valid) {
     await performLogin()
   }

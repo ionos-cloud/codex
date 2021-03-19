@@ -3,10 +3,10 @@ import {Command, flags} from '@oclif/command'
 import { VersionData } from '../services/version-data'
 import runConfig from '../services/run-config'
 import vdc from '../services/vdc'
-import ui from '../services/ui'
 import config from '../services/config'
+import BaseCommand from '../base/base-command'
 
-export default class Init extends Command {
+export default class Init extends BaseCommand {
   static description = 'initialize a codex project in the current directory'
 
   static examples = [
@@ -18,11 +18,6 @@ export default class Init extends Command {
     version: flags.integer({char: 'v', default: VersionData.defaultVersion}),
     debug: flags.boolean({char: 'd', default: false}),
     'vdc-host': flags.string({description: 'vdc host'})
-  }
-
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
   }
 
   async run() {

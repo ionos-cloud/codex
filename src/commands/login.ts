@@ -1,36 +1,28 @@
-import {Command, flags} from '@oclif/command'
+import { flags } from '@oclif/command'
 
 import runConfig from '../services/run-config'
 import * as auth from '../services/auth'
 import config from '../services/config'
 import ui from '../services/ui'
+import BaseCommand from '../base/base-command'
 
 const ionosUsernameEnvVar = 'CODEX_USERNAME'
 const ionosPasswordEnvVar = 'CODEX_PASSWORD'
 
-export default class Login extends Command {
+export default class Login extends BaseCommand {
   static description = 'authenticate using the Inside credentials'
 
   static examples = [ '$ codex login' ]
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    debug: flags.boolean({char: 'd', default: false}),
+    ...BaseCommand.flags,
     username: flags.string({char: 'u', required: false, description: 'username to login with'}),
     password: flags.string({char: 'p', required: false, description: 'password to login with'})
-  }
-
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
   }
 
   async run() {
     const {flags} = this.parse(Login)
     runConfig.debug = flags.debug
-
-    config.check()
-    config.load()
 
     const { prompt } = require('enquirer');
 
@@ -42,7 +34,7 @@ export default class Login extends Command {
           type: 'input',
           name: 'username',
           message: 'username',
-          initial: config.data.username || ''
+          initial: config.data.auth.username || ''
         })
 
         if (answer === undefined || answer.username === undefined) {
@@ -78,10 +70,10 @@ export default class Login extends Command {
       password = flags.password
     }
 
-    config.data.username = username
-    config.data.token = await auth.login(username, password)
+    config.data.auth.username = username
+    config.data.auth.token = await auth.login(username, password)
     config.save()
 
-    ui.success(`successfully logged in as ${config.data.username}`)
+    ui.success(`successfully logged in as ${config.data.auth.username}`)
   }
 }

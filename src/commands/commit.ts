@@ -8,8 +8,9 @@ import config from '../services/config'
 import * as auth from '../services/auth'
 import * as locking from '../services/locking'
 import * as swagger from '../services/swagger'
+import BaseCommand from '../base/base-command'
 
-export default class Commit extends Command {
+export default class Commit extends BaseCommand {
   static description = 'commit changes into the patch being edited'
 
   static flags = {
@@ -19,17 +20,10 @@ export default class Commit extends Command {
     message: flags.string({char: 'm', required: false})
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
-
   async run() {
     const {flags} = this.parse(Commit)
 
     runConfig.debug = flags.debug
-
-    config.load()
 
     const versionData = new VersionData(flags.version)
     versionData.load()

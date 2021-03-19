@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import runConfig from '../services/run-config'
 import { Mode, Status, VersionData } from '../services/version-data'
 import ui from '../services/ui'
@@ -6,11 +6,11 @@ import * as fs from 'fs'
 import chalk from 'chalk'
 import { PatchError } from '../exceptions/patch-error'
 
-import config from '../services/config'
 import * as locking from '../services/locking'
 import * as auth from '../services/auth'
+import BaseCommand from '../base/base-command'
 
-export default class Edit extends Command {
+export default class Edit extends BaseCommand {
   static description = 'describe the command here'
 
   static flags = {
@@ -22,18 +22,10 @@ export default class Edit extends Command {
     abort: flags.boolean({char: 'a', default: false})
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
-
   async run() {
     const {flags} = this.parse(Edit)
 
     runConfig.debug = flags.debug
-
-    config.check()
-    config.load()
 
     /* compile up to the given patch and mark it as edit */
     const versionData = new VersionData(flags.version)

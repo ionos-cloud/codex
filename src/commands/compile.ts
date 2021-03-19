@@ -1,13 +1,13 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 import runConfig from '../services/run-config'
 import { Mode, Status, VersionData } from '../services/version-data'
 import ui from '../services/ui'
 import * as fs from 'fs'
 import chalk from 'chalk'
 import { PatchError } from '../exceptions/patch-error'
-import config from '../services/config'
+import BaseCommand from '../base/base-command'
 
-export default class Compile extends Command {
+export default class Compile extends BaseCommand {
   static description = 'compile baseline plus all the patches'
 
   static flags = {
@@ -17,16 +17,8 @@ export default class Compile extends Command {
     output: flags.string({char: 'o', required: false})
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
-
   async run() {
     const {flags} = this.parse(Compile)
-
-    config.check()
-    config.load()
 
     runConfig.debug = flags.debug
 

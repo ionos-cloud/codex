@@ -1,12 +1,12 @@
-import {Command, flags} from '@oclif/command'
+import { flags } from '@oclif/command'
 
 import runConfig from '../services/run-config'
 import * as locking from '../services/locking'
 import * as auth from '../services/auth'
 import config from '../services/config'
-import ui from '../services/ui'
+import BaseCommand from '../base/base-command'
 
-export default class Unlock extends Command {
+export default class Unlock extends BaseCommand {
   static description = 'forcefully release the lock'
 
   static examples = [ '$ codex unlock' ]
@@ -16,17 +16,9 @@ export default class Unlock extends Command {
     debug: flags.boolean({char: 'd', default: false}),
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
-
   async run() {
     const {flags} = this.parse(Unlock)
     runConfig.debug = flags.debug
-
-    config.check()
-    config.load()
 
     await auth.check()
     await locking.unlock()

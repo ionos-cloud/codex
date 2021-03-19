@@ -34,11 +34,23 @@ function eol() {
   process.stdout.write('\n')
 }
 
+function print(data: any) {
+  let str = ''
+  if (typeof data === 'object') {
+    str = JSON.stringify(data, null, 2)
+  } else {
+    str = data
+  }
+
+  process.stdout.write(str)
+}
+
 export default {
   debug,
   info,
   warning,
   error,
   success,
-  eol
+  eol,
+  print
 }

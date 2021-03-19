@@ -1,11 +1,11 @@
-import {Command, flags} from '@oclif/command'
+import { flags } from '@oclif/command'
 
 import { VersionData } from '../services/version-data'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
-import config from '../services/config'
+import BaseCommand from '../base/base-command'
 
-export default class Patch extends Command {
+export default class Patch extends BaseCommand {
   static description = 'listing patches or editing their description'
 
   static flags = {
@@ -25,9 +25,6 @@ export default class Patch extends Command {
   async run() {
     const {flags} = this.parse(Patch)
     runConfig.debug = flags.debug
-
-    config.check()
-    config.load()
 
     const versionData = new VersionData(flags.version)
     await versionData.load()
@@ -61,8 +58,4 @@ export default class Patch extends Command {
     }
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
 }

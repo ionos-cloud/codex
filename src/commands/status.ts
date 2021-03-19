@@ -1,12 +1,12 @@
-import { Command, flags } from '@oclif/command'
+import { flags } from '@oclif/command'
 
 import { Mode, VersionData, Status as VersionStatus } from '../services/version-data'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
 import chalk from 'chalk'
-import config from '../services/config'
+import BaseCommand from '../base/base-command'
 
-export default class Status extends Command {
+export default class Status extends BaseCommand {
   static description = 'display status information'
 
   static examples = [ '$ codex status' ]
@@ -18,17 +18,9 @@ export default class Status extends Command {
     reset: flags.boolean({char: 'r', default: false})
   }
 
-  protected async catch(err: any) {
-    ui.error(err.message)
-    this.exit(1)
-  }
-
   async run() {
     const {flags} = this.parse(Status)
     runConfig.debug = flags.debug
-
-    config.check()
-    config.load()
 
     const versionData = new VersionData(flags.version)
     versionData.load()
