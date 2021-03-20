@@ -66,10 +66,9 @@ export default class Commit extends BaseCommand {
     ui.info(`saving patch ${patchBeingEdited}`)
     await codex.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())
 
-    if (this.flags.message !== undefined) {
-      ui.info('saving patch description')
-      await codex.describePatch(patchBeingEdited, this.flags.message)
-    }
+    const desc = this.flags.message || '<no description>'
+    ui.info('saving patch description')
+    await codex.describePatch(patchBeingEdited, desc)
     state.setIdle().save()
 
     ui.info(`removing work file ${workFile}`)

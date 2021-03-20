@@ -114,7 +114,14 @@ export class S3 implements CodexStorage {
   }
 
   async readPatchDescription(version: number, patch: number): Promise<string> {
-    return this.readFile(this.getPatchDescriptionPath(version, patch))
+    try {
+      const d = await this.readFile(this.getPatchDescriptionPath(version, patch))
+      return d
+    } catch (error) {
+      ui.debug(error)
+      ui.warning(`[s3] could not read patch ${patch} description: ${error.message}`)
+      return ''
+    }
   }
 
   async writePatchDescription(version: number, patch: number, content: string) {
