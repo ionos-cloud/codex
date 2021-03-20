@@ -12,7 +12,7 @@ import BaseCommand from '../base/base-command'
 import state, { Mode, Status } from '../services/state'
 
 export default class Edit extends BaseCommand {
-  static description = 'describe the command here'
+  static description = 'edit the swagger file after applying all patches or edit a specific patch'
 
   static flags = {
     help: flags.help({char: 'h'}),

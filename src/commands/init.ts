@@ -5,7 +5,7 @@ import vdc from '../services/vdc'
 import BaseCommand from '../base/base-command'
 
 export default class Init extends BaseCommand {
-  static description = 'initialize a codex project in the current directory'
+  static description = 'initialize a codex project in S3'
 
   static examples = [
     '$ codex init',

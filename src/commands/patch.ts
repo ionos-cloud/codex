@@ -6,7 +6,7 @@ import BaseCommand from '../base/base-command'
 import * as locking from '../services/locking'
 
 export default class Patch extends BaseCommand {
-  static description = 'listing patches or editing their description'
+  static description = 'list or remove patches or edit their description'
 
   locked = false
 
