@@ -1,26 +1,44 @@
 import config from './config'
 import axios from 'axios'
 import ui from './ui'
+import * as auth from './auth'
 
 export const lockName = 'codex'
 
 export async function lock() {
-  try {
-    ui.info('acquiring lock')
-    await axios.put(`${config.data.lockUrl}/trylock/${lockName}`, null, {
-      headers: {
-        Authorization: config.data.auth.token,
-        'X-Auth-Provider': 'ldap'
+  let count = 0
+  while (count++ < 2) {
+    try {
+      ui.info('acquiring lock')
+      // eslint-disable-next-line no-await-in-loop
+      await axios.put(`${config.data.lockUrl}/trylock/${lockName}`, null, {
+        headers: {
+          Authorization: config.data.auth.token || '',
+          'X-Auth-Provider': 'ldap'
+        }
+      })
+      break
+    } catch (error) {
+      if (error.response === undefined) {
+        ui.error(error)
+      } else {
+        if (error.response.status === 401 && count <= 1) {
+          ui.warning('you are not logged in or your login session expired')
+          // eslint-disable-next-line no-await-in-loop
+          await auth.performLogin()
+          continue
+        }
+
+        if (error.response.status === 409) {
+          ui.error(`session already locked by ${error.response.data.error.data}`)
+          throw new Error('could not acquire lock; session in progress; please try again later')
+        }
+
+        ui.error(`error encountered while trying to acquire the lock: HTTP CODE ${error.response.status}`)
+        ui.error(JSON.stringify(error.response.data, null, 2))
       }
-    })
-  } catch (error) {
-    if (error.response.status === 409) {
-      ui.error(`session already locked by ${error.response.data.error.data}`)
-      throw new Error('could not acquire lock; session in progress; please try again later')
+      throw new Error('could not acquire the lock')
     }
-    ui.error(`error encountered while trying to acquire the lock: HTTP CODE ${error.response.status}`)
-    ui.error(JSON.stringify(error.response.data, null, 2))
-    throw new Error('could not acquire the lock')
   }
 }
 
@@ -29,7 +47,7 @@ export async function unlock() {
     ui.info('releasing lock')
     await axios.put(`${config.data.lockUrl}/unlock/${lockName}`, null, {
       headers: {
-        Authorization: config.data.auth.token,
+        Authorization: config.data.auth.token || '',
         'X-Auth-Provider': 'ldap'
       }
     })

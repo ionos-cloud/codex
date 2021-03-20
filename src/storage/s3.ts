@@ -1,6 +1,6 @@
 import aws = require('aws-sdk')
 
-import { CodexStorage } from '../contract/codex-storage'
+import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
 import ui from '../services/ui'
 import { basename } from 'path'
@@ -22,17 +22,17 @@ export class S3 implements CodexStorage {
 
   constructor() {
     if (config.data.s3.key === undefined || config.data.s3.key.trim().length === 0) {
-      throw new Error('invalid s3 config: missing key')
+      throw new Error('[s3] invalid s3 config: missing key')
     }
 
     if (config.data.s3.secret === undefined || config.data.s3.secret.trim().length === 0) {
-      throw new Error('invalid s3 config: missing secret')
+      throw new Error('[s3] invalid s3 config: missing secret')
     }
 
   }
 
   protected async readFile(path: string): Promise<string> {
-    ui.debug(`reading file ${path}`)
+    ui.debug(`[s3] reading file ${path}`)
     let data
     try {
       data = await this.s3.getObject({
@@ -41,11 +41,11 @@ export class S3 implements CodexStorage {
       }).promise()
     } catch (error) {
       ui.debug(error.stack)
-      throw new Error(`could not read file ${path}: ${error.message}`)
+      throw new Error(`[s3] could not read file ${path}: ${error.message}`)
     }
 
     if (data.Body === undefined) {
-      throw new Error(`could not read file ${path}`)
+      throw new Error(`[s3] could not read file ${path}`)
     }
 
     return data.Body.toString()
@@ -60,9 +60,21 @@ export class S3 implements CodexStorage {
       }).promise()
     } catch (error) {
       ui.debug(error.stack)
-      throw new Error(`could not save file ${path}: ${error.message}`)
+      throw new Error(`[s3] could not save file ${path}: ${error.message}`)
     }
 
+  }
+
+  protected async removeFile(path: string) {
+    try {
+      await this.s3.deleteObject({
+        Bucket: this.bucket,
+        Key: path
+      }).promise()
+    } catch (error) {
+      ui.debug(error.stack)
+      throw new Error(`[s3] could not remove file ${path}: ${error.message}`)
+    }
   }
 
   public getVersionPath(version: number): string {
@@ -109,7 +121,7 @@ export class S3 implements CodexStorage {
     await this.writeFile(this.getPatchDescriptionPath(version, patch), content)
   }
 
-  async countPatches(version: number): Promise<number> {
+  async fetchPatches(version: number): Promise<PatchesCollection> {
     const numbers: number[] = []
     const path = this.getPatchesPath(version) + '/'
     try {
@@ -120,7 +132,7 @@ export class S3 implements CodexStorage {
 
       if (data.Contents === undefined) {
         ui.warning('no patches found; got an empty response from S3')
-        return 0
+        return {}
       }
 
       for (const entry of data.Contents) {
@@ -136,22 +148,30 @@ export class S3 implements CodexStorage {
 
     } catch (error) {
       ui.debug(error)
-      throw new Error(`could not read the list of patches: ${error.message}`)
+      throw new Error(`[s3] could not read the list of patches: ${error.message}`)
     }
 
     const sorted = numbers.sort((a: number, b: number) => (a < b) ? -1 : ((a > b) ? 1 : 0))
-    let prev: number | undefined
-    for (const x of sorted) {
-      if (prev !== undefined) {
-        if (x - prev !== 1) {
-          throw new Error(`patches out of order: after patch ${prev} comes patch ${x}`)
-        }
-      }
-      prev = x
+
+    const ret: PatchesCollection = {}
+
+    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(version, value)))
+
+    for (let idx = 0; idx < sorted.length; idx++) {
+      ret[sorted[idx]] = descriptions[idx] === undefined ? '<no description>' : descriptions[idx]
     }
 
-    return prev || 0;
+    return ret
 
+  }
+
+  async removePatch(version: number, patch: number) {
+    await this.removeFile(this.getPatchPath(version, patch))
+    await this.removePatchDescription(version, patch)
+  }
+
+  async removePatchDescription(version: number, patch: number) {
+    await this.removeFile(this.getPatchDescriptionPath(version, patch))
   }
 
 }

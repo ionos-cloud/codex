@@ -32,7 +32,7 @@ export default class Compile extends BaseCommand {
 
     let content = ''
     try {
-      content = await codex.compile(codex.getNumberOfPatches())
+      content = await codex.compile(codex.getMaxPatchLevel())
     } catch (error) {
       if (error instanceof PatchError) {
         fs.writeFileSync(output, error.content)

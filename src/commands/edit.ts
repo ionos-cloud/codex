@@ -70,21 +70,21 @@ export default class Edit extends BaseCommand {
       throw new Error(`you are already editing patch ${state.data.patch}`)
     }
 
-    if (flags.patch > codex.getNumberOfPatches()) {
-      throw new Error(`patch ${flags.patch} doesn't exist; there are ${codex.getNumberOfPatches()} patches in total`)
+    const maxPatchLevel = codex.getMaxPatchLevel()
+    if (flags.patch > maxPatchLevel) {
+      throw new Error(`patch ${flags.patch} doesn't exist; maximum patch level is ${maxPatchLevel}`)
     }
 
     let patchToEdit
     let createNew = false
     const versionPatchLevel = codex.getVersionPatchLevel()
-    const numberOfPatches = codex.getNumberOfPatches()
     if (flags.patch === 0) {
       if (versionPatchLevel > 0) {
-        if (versionPatchLevel ===  numberOfPatches) {
+        if (versionPatchLevel ===  maxPatchLevel) {
           createNew = true
-          patchToEdit = numberOfPatches + 1
+          patchToEdit = maxPatchLevel + 1
         } else {
-          patchToEdit = codex.getNumberOfPatches()
+          patchToEdit = maxPatchLevel
         }
       } else {
         patchToEdit = 1
@@ -106,7 +106,7 @@ export default class Edit extends BaseCommand {
 
     let compiled = ''
     try {
-      compiled = await codex.compile(createNew ? codex.getNumberOfPatches() : patchToEdit)
+      compiled = await codex.compile(createNew ? maxPatchLevel : patchToEdit)
     } catch (error) {
       if (error instanceof PatchError) {
         fs.writeFileSync(output, compiled)
