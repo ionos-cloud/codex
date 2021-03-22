@@ -50,7 +50,12 @@ export class State {
   }
 
   load() {
-    this.set(JSON.parse(fs.readFileSync(this.getStateFilePath()).toString()))
+    if (fs.existsSync(this.getStateFilePath())) {
+      this.set(JSON.parse(fs.readFileSync(this.getStateFilePath()).toString()))
+    } else {
+      ui.warning('state file not found; falling back to the default idle state')
+      this.setIdle().save()
+    }
   }
 
   public save(): State {
@@ -59,6 +64,7 @@ export class State {
       status: this.status,
       data: this.data
     }
+    fs.mkdirSync(config.dir, {recursive: true})
     ui.debug(`saving state: ${JSON.stringify(state)}`)
     fs.writeFileSync(this.getStateFilePath(), JSON.stringify(state, null, 2))
     return this

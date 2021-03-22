@@ -22,11 +22,11 @@ export class S3 implements CodexStorage {
 
   constructor() {
     if (config.data.s3.key === undefined || config.data.s3.key.trim().length === 0) {
-      throw new Error('[s3] invalid s3 config: missing key')
+      throw new Error('[s3] invalid s3 config: missing key; run \'codex config s3.key <your s3 key>\'')
     }
 
     if (config.data.s3.secret === undefined || config.data.s3.secret.trim().length === 0) {
-      throw new Error('[s3] invalid s3 config: missing secret')
+      throw new Error('[s3] invalid s3 config: missing secret; run \'codex config s3.secret <your s3 key>\'')
     }
 
   }
