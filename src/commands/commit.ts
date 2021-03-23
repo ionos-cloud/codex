@@ -14,28 +14,33 @@ export default class Commit extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({char: 'v', required: false, default: Codex.defaultVersion}),
     message: flags.string({char: 'm', required: false})
   }
 
   async run() {
-
-    const codex = new Codex(this.flags.version)
-    await codex.load()
 
     if (state.mode !== Mode.EDIT) {
       throw new Error(`nothing to commit; run 'codex edit --version ${this.flags.version} first`)
     }
 
     const patchBeingEdited = state.data.patch
+    const version = state.version
+
     if (patchBeingEdited === 0) {
       throw new Error('invalid state: patch being edited is patch number 0')
+    }
+
+    if (version === undefined) {
+      throw new Error('invalid state: unknown version')
     }
 
     const workFile = state.data.file
     if (!fs.existsSync(workFile)) {
       throw new Error(`work file ${workFile} not found!`)
     }
+
+    const codex = new Codex(version)
+    await codex.load()
 
     await auth.check()
 
@@ -46,13 +51,13 @@ export default class Commit extends BaseCommand {
       if (error instanceof PatchError) {
         const failedPatch = error.patch
         ui.error(`something went wrong with patch ${failedPatch}`)
-        ui.error(`please run 'codex edit --abort' followed by 'codex edit --patch ${failedPatch}' to fix it `)
+        ui.error(`please run 'codex edit --abort' followed by 'codex edit --patch ${failedPatch} -v ${version}' to fix it `)
         throw new Error('could not commit changes')
       } else {
         throw error
       }
     }
-    
+
     /* check patch level in the workFile */
     swagger.fixPatchLevel(workFile, patchBeingEdited)
 
@@ -67,7 +72,7 @@ export default class Commit extends BaseCommand {
     try {
       await locking.unlock()
     } catch (error) {
-      ui.warning('an error occurred while trying to release the lock; continuing')
+      ui.warning('an error occurred while trying to release the lock; ignoring')
     }
 
     ui.info(`removing work file ${workFile}`)

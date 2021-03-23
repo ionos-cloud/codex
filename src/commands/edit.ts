@@ -1,5 +1,4 @@
 import { flags } from '@oclif/command'
-import runConfig from '../services/run-config'
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import * as fs from 'fs'
@@ -15,26 +14,22 @@ export default class Edit extends BaseCommand {
   static description = 'edit the swagger file after applying all patches or edit a specific patch'
 
   static flags = {
-    help: flags.help({char: 'h'}),
+    ...BaseCommand.flags,
     patch: flags.integer({char: 'p', required: false, default: 0}),
     output: flags.string({char: 'o', required: false}),
     version: flags.integer({char: 'v', required: false, default: Codex.defaultVersion}),
-    debug: flags.boolean({char: 'd', default: false}),
     abort: flags.boolean({char: 'a', default: false})
   }
 
   async run() {
-    const {flags} = this.parse(Edit)
-
-    runConfig.debug = flags.debug
 
     /* compile up to the given patch and mark it as edit */
-    const codex = new Codex(flags.version)
+    const codex = new Codex(this.flags.version)
     await codex.load()
 
     await auth.check()
 
-    if (flags.abort) {
+    if (this.flags.abort) {
       if (state.mode !== Mode.EDIT) {
         throw new Error('no edit session found; nothing to abort')
       }
@@ -67,18 +62,18 @@ export default class Edit extends BaseCommand {
     }
 
     if (state.mode === Mode.EDIT) {
-      throw new Error(`you are already editing patch ${state.data.patch}`)
+      throw new Error(`you are already editing patch ${state.data.patch} on version ${state.version}`)
     }
 
     const maxPatchLevel = codex.getMaxPatchLevel()
-    if (flags.patch > maxPatchLevel) {
-      throw new Error(`patch ${flags.patch} doesn't exist; maximum patch level is ${maxPatchLevel}`)
+    if (this.flags.patch > maxPatchLevel) {
+      throw new Error(`patch ${this.flags.patch} doesn't exist; maximum patch level is ${maxPatchLevel}`)
     }
 
     let patchToEdit
     let createNew = false
     const versionPatchLevel = codex.getVersionPatchLevel()
-    if (flags.patch === 0) {
+    if (this.flags.patch === 0) {
       if (versionPatchLevel > 0) {
         if (versionPatchLevel ===  maxPatchLevel) {
           createNew = true
@@ -91,13 +86,13 @@ export default class Edit extends BaseCommand {
         createNew = true
       }
     } else {
-      patchToEdit = flags.patch
+      patchToEdit = this.flags.patch
       if (patchToEdit <= versionPatchLevel) {
         throw new Error(`cannot edit a change (patch) that was already included in the baseline; baseline patch level is ${versionPatchLevel}`)
       }
     }
 
-    const output = flags.output || `swagger-v${flags.version}.json`
+    const output = this.flags.output || `swagger-v${this.flags.version}.json`
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)
     }
@@ -116,7 +111,8 @@ export default class Edit extends BaseCommand {
           data: {
             patch: error.patch,
             file: output
-          }
+          },
+          version: this.flags.version
         }).save()
         throw new Error(`applying patch ${state.data.patch} failed; please edit ${output} and than run 'codex commit' to fix the patch`)
       } else {
@@ -131,7 +127,8 @@ export default class Edit extends BaseCommand {
       data: {
         patch: patchToEdit,
         file: output
-      }
+      },
+      version: this.flags.version
     }).save()
     ui.info(`baseline with all patches applied saved as ${chalk.blueBright(output)}; run '${chalk.yellowBright('codex commit')}' when you're done`)
     ui.info(`changes will be saved in patch number ${patchToEdit}`)

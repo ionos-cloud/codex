@@ -16,12 +16,13 @@ export interface StateModel {
   mode: Mode;
   status: Status;
   data: Record<string, any>;
+  version?: number;
 }
 
 export const idleState: StateModel = {
   mode: Mode.IDLE,
   status: Status.OK,
-  data: {}
+  data: {},
 }
 
 export class State {
@@ -31,6 +32,7 @@ export class State {
   mode: Mode = Mode.IDLE
   status: Status = Status.OK
   data: Record<string, any> = {}
+  version?: number
 
   public getStateFilePath(): string {
     return `${config.dir}/${State.stateFileName}`
@@ -40,6 +42,7 @@ export class State {
     this.mode = state.mode
     this.status = state.status
     this.data = state.data
+    this.version = state.version
     return this
   }
 
@@ -62,7 +65,8 @@ export class State {
     const state: StateModel = {
       mode: this.mode,
       status: this.status,
-      data: this.data
+      data: this.data,
+      version: this.version
     }
     fs.mkdirSync(config.dir, {recursive: true})
     ui.debug(`saving state: ${JSON.stringify(state)}`)
