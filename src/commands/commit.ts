@@ -52,14 +52,7 @@ export default class Commit extends BaseCommand {
         throw error
       }
     }
-
-    /* should we unlock later? */
-    try {
-      await locking.unlock()
-    } catch (error) {
-      ui.warning('an error occurred while trying to release the lock; continuing')
-    }
-
+    
     /* check patch level in the workFile */
     swagger.fixPatchLevel(workFile, patchBeingEdited)
 
@@ -70,6 +63,12 @@ export default class Commit extends BaseCommand {
     ui.info('saving patch description')
     await codex.describePatch(patchBeingEdited, desc)
     state.setIdle().save()
+
+    try {
+      await locking.unlock()
+    } catch (error) {
+      ui.warning('an error occurred while trying to release the lock; continuing')
+    }
 
     ui.info(`removing work file ${workFile}`)
     fs.unlinkSync(workFile)
