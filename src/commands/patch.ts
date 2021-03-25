@@ -4,8 +4,6 @@ import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import BaseCommand from '../base/base-command'
 import * as locking from '../services/locking'
-import * as diff from 'diff'
-import chalk from 'chalk'
 
 export default class Patch extends BaseCommand {
   static description = 'list or remove patches or edit their description'
