@@ -17,7 +17,7 @@ $ npm install -g @ionos-cloud/codex
 $ codex COMMAND
 running command...
 $ codex (-v|--version|version)
-@ionos-cloud/codex/2.1.0 darwin-x64 node-v14.15.4
+@ionos-cloud/codex/2.1.1 darwin-x64 node-v14.15.4
 $ codex --help [COMMAND]
 USAGE
   $ codex COMMAND
@@ -56,7 +56,7 @@ OPTIONS
   -m, --message=message
 ```
 
-_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/commit.ts)_
+_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/commit.ts)_
 
 ## `codex compile`
 
@@ -73,7 +73,7 @@ OPTIONS
   -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/compile.ts)_
+_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/compile.ts)_
 
 ## `codex config [PATH] [VALUE]`
 
@@ -97,7 +97,7 @@ EXAMPLES
   $ codex config foo.bar value
 ```
 
-_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/config.ts)_
+_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/config.ts)_
 
 ## `codex diff FILE1 FILE2`
 
@@ -115,7 +115,7 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/diff.ts)_
+_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/diff.ts)_
 
 ## `codex edit`
 
@@ -134,7 +134,7 @@ OPTIONS
   -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/edit.ts)_
+_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/edit.ts)_
 
 ## `codex help [COMMAND]`
 
@@ -171,7 +171,7 @@ EXAMPLE
   $ codex init
 ```
 
-_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/init.ts)_
 
 ## `codex lock`
 
@@ -189,7 +189,7 @@ EXAMPLE
   $ codex lock
 ```
 
-_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/lock.ts)_
+_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/lock.ts)_
 
 ## `codex login`
 
@@ -209,7 +209,7 @@ EXAMPLE
   $ codex login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/login.ts)_
 
 ## `codex normalize FILE`
 
@@ -227,7 +227,7 @@ OPTIONS
   -i, --indent=indent  [default: 2]
 ```
 
-_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/normalize.ts)_
+_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/normalize.ts)_
 
 ## `codex patch`
 
@@ -248,7 +248,7 @@ OPTIONS
   -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/patch.ts)_
+_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/patch.ts)_
 
 ## `codex sdk-changes`
 
@@ -267,7 +267,7 @@ EXAMPLE
   $ codex sdk-changes
 ```
 
-_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/sdk-changes.ts)_
+_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/sdk-changes.ts)_
 
 ## `codex status`
 
@@ -287,7 +287,7 @@ EXAMPLE
   $ codex status
 ```
 
-_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/status.ts)_
+_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/status.ts)_
 
 ## `codex unlock`
 
@@ -305,7 +305,7 @@ EXAMPLE
   $ codex unlock
 ```
 
-_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/unlock.ts)_
+_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/unlock.ts)_
 
 ## `codex update`
 
@@ -325,5 +325,5 @@ OPTIONS
   --vdc-host=vdc-host    vdc host
 ```
 
-_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v2.1.0/src/commands/update.ts)_
+_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v2.1.1/src/commands/update.ts)_
 <!-- commandsstop -->
