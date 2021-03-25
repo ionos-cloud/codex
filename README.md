@@ -1,4 +1,4 @@
-@ionos-cloud/swagman
+@ionos-cloud/codex
 ====================
 
 VDC &amp; SDK swagger management tool

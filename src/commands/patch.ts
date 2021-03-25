@@ -6,7 +6,7 @@ import BaseCommand from '../base/base-command'
 import * as locking from '../services/locking'
 
 export default class Patch extends BaseCommand {
-  static description = 'list or remove patches or edit their description'
+  static description = 'list, remove or display patches or edit their description'
 
   locked = false
 
@@ -20,9 +20,18 @@ export default class Patch extends BaseCommand {
       description: 'patch to set message for; defaults to last patch',
       dependsOn: [ 'message' ]
     }),
-    list: flags.boolean({char: 'l', required: false, exclusive: ['message']}),
-    rm: flags.integer({char: 'r', required: false, exclusive: ['message', 'list']}),
-    get: flags.integer({char: 'g', required: false, exclusive: ['message', 'list', 'rm']})
+    list: flags.boolean({
+      char: 'l', required: false, exclusive: ['message'],
+      description: 'list all the patches'
+    }),
+    rm: flags.integer({
+      char: 'r', required: false, exclusive: ['message', 'list'],
+      description: 'remove the specified patch'
+    }),
+    get: flags.integer({
+      char: 'g', required: false, exclusive: ['message', 'list', 'rm'],
+      description: 'display the contents of the specified patch'
+    })
   }
 
   async run() {
