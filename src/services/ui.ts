@@ -45,6 +45,18 @@ function print(data: any) {
   process.stdout.write(str)
 }
 
+function printPatch(patch: string) {
+  for (const line of patch.split('\n')) {
+    if (line.startsWith('- ')) {
+      print(chalk.redBright(line) + '\n')
+    } else if (line.startsWith('+ ')) {
+      print(chalk.greenBright(line) + '\n')
+    } else {
+      print(line + '\n')
+    }
+  }
+}
+
 export default {
   debug,
   info,
@@ -52,5 +64,6 @@ export default {
   error,
   success,
   eol,
-  print
+  print,
+  printPatch
 }

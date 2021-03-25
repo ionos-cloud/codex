@@ -78,6 +78,10 @@ export class Codex {
     return swagger.getVersionPatchLevel(this.baselineJson)
   }
 
+  patchExists(patch: number): boolean {
+    return Object.keys(this.patches).map(v => Number(v)).includes(patch)
+  }
+
   /**
    * apply the given patch
    *
@@ -103,8 +107,9 @@ export class Codex {
    */
   async compile(level = 0): Promise<string> {
 
-    if (level > this.getMaxPatchLevel()) {
-      throw new Error(`patch level ${level} not found; maximum patch level is ${this.patches}`)
+    const maxPatchLevel = this.getMaxPatchLevel()
+    if (level > maxPatchLevel) {
+      throw new Error(`patch level ${level} not found; maximum patch level is ${maxPatchLevel}`)
     }
 
     ui.info('compiling baseline')
@@ -131,6 +136,10 @@ export class Codex {
 
   }
 
+  async compileAll(): Promise<string> {
+    return this.compile(this.getMaxPatchLevel())
+  }
+
   createPatch(patch: number, from: string, to: string): Codex {
     const content = diff.createPatch('swagger.json', from, to)
     this.storage.writePatch(this.version, patch, content)
@@ -145,6 +154,10 @@ export class Codex {
   async getPatchDescription(patch: number): Promise<string | undefined> {
     ui.debug(`getting patch description for ${patch}`)
     return this.storage.readPatchDescription(this.version, patch)
+  }
+
+  async getPatch(patch: number): Promise<string> {
+    return this.storage.readPatch(this.version, patch)
   }
 
   async updateCheck(): Promise<UpstreamUpdateInfo | undefined> {

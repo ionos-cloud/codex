@@ -4,6 +4,8 @@ import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import BaseCommand from '../base/base-command'
 import * as locking from '../services/locking'
+import * as diff from 'diff'
+import chalk from 'chalk'
 
 export default class Patch extends BaseCommand {
   static description = 'list or remove patches or edit their description'
@@ -21,7 +23,8 @@ export default class Patch extends BaseCommand {
       dependsOn: [ 'message' ]
     }),
     list: flags.boolean({char: 'l', required: false, exclusive: ['message']}),
-    rm: flags.integer({char: 'r', required: false, exclusive: ['message', 'list']})
+    rm: flags.integer({char: 'r', required: false, exclusive: ['message', 'list']}),
+    get: flags.integer({char: 'g', required: false, exclusive: ['message', 'list', 'rm']})
   }
 
   async run() {
@@ -77,6 +80,17 @@ export default class Patch extends BaseCommand {
       if (answer) {
         await codex.removePatch(this.flags.rm)
       }
+    }
+
+    if (this.flags.get !== undefined) {
+      if (!codex.patchExists(this.flags.get)) {
+        throw new Error(`patch ${this.flags.get} doesn't exist`)
+      }
+
+      const content = await codex.getPatch(this.flags.get)
+
+      ui.eol()
+      ui.printPatch(content)
     }
   }
 
