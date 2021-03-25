@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
+    "rootDir": "test",
     "esModuleInterop": true,
     "noEmit": true
   },

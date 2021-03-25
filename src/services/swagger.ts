@@ -21,9 +21,6 @@ export function getVersionPatchLevel(swagger: Record<string, any>): number {
   }
 
   const level = Number(match[1])
-  if (isNaN(level)) {
-    throw new TypeError(`invalid sdk patch level found in baseline: ${match[1]}`)
-  }
 
   return level
 }

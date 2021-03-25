@@ -26,10 +26,11 @@ export class Codex {
   baselineJson: Record<string, any> = {}
   patches: PatchesCollection = {}
   versionPatchLevel = 0
-  storage: CodexStorage = new S3()
+  storage: CodexStorage
 
-  constructor(version: number) {
+  constructor(version: number, storage: CodexStorage = new S3()) {
     this.version = version
+    this.storage = storage
   }
 
   async init() {

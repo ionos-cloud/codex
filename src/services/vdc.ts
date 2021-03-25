@@ -18,12 +18,15 @@ export class Vdc {
   async fetchSwaggerFile(version: number): Promise<Record<string, any>> {
     const url = this.getSwaggerUrl(version)
     ui.debug(`downloading vdc swagger from ${url}`)
-    const response = await axios.get(url)
-    if (response.status !== 200) {
-      throw new Error(`swagger file not found for version ${version}`)
+    try {
+      const response = await axios.get(url)
+      return response.data
+    } catch (error) {
+      if (error.response !== undefined && error.response.status !== undefined && error.response.status === 404) {
+        throw new Error(`swagger file not found for version ${version}`)
+      }
+      throw error
     }
-
-    return response.data
   }
 }
 

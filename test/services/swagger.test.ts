@@ -73,6 +73,21 @@ describe('swagger tests', function () {
     expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel2}`)
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel2)
 
+    /* not is should leave it as it is */
+    swagger.fixPatchLevel(fileName, patchLevel2)
+
+    result = JSON.parse(fs.readFileSync(fileName).toString())
+
+    expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel2}`)
+    expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel2)
+
     mock.restore()
+  })
+
+  it('should fill in missing info', () => {
+    const dummy: Record<string, any> = {}
+    swagger.setPatchLevel(dummy, 3)
+    expect(dummy.info).to.have.property('version')
+    expect(dummy.info.version).to.be.equal('-SDK.3')
   })
 })

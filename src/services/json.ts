@@ -2,16 +2,22 @@ import fs from 'fs'
 import * as diff from 'diff'
 import axios from 'axios'
 import path from 'path'
+import ui from './ui'
 
 /* normalizes a possibly minified json by converting it to 2 spaces indented json string */
 export async function normalize(file: string, indent = 2): Promise<string> {
   let json = {}
   if (file.startsWith('http://') || file.startsWith('https://')) {
-    const response = await axios.get(file)
-    if (response.status !== 200) {
-      throw new Error(`could not fetch ${file}: got HTTP status code ${response.status}`)
+    try {
+      const response = await axios.get(file)
+      json = response.data
+    } catch (error) {
+      if (error.response !== undefined && error.response.status !== undefined) {
+        ui.debug(error)
+        throw new Error(`could not fetch ${file}: got HTTP status code ${error.response.status}`)
+      }
+      throw error
     }
-    json = response.data
   } else {
     const str = fs.readFileSync(file).toString()
     try {

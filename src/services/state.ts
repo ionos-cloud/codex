@@ -23,6 +23,7 @@ export const idleState: StateModel = {
   mode: Mode.IDLE,
   status: Status.OK,
   data: {},
+  version: undefined
 }
 
 export class State {
@@ -33,6 +34,15 @@ export class State {
   status: Status = Status.OK
   data: Record<string, any> = {}
   version?: number
+
+  get(): StateModel {
+    return {
+      mode: this.mode,
+      status: this.status,
+      data: this.data,
+      version: this.version
+    }
+  }
 
   public getStateFilePath(): string {
     return `${config.dir}/${State.stateFileName}`

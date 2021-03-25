@@ -1,6 +1,8 @@
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
 import mock = require('mock-fs')
+import nock = require('nock')
 import * as json from '../../src/services/json'
+import chaiAsPromised = require('chai-as-promised')
 
 describe('json tests', () => {
   it('should normalize files', async () => {
@@ -14,6 +16,44 @@ describe('json tests', () => {
 }`
     expect(await json.normalize('file.json')).to.be.equal(expected)
     mock.restore()
+  })
+
+  it('should normalize via http', async () => {
+    nock('http://foo.bar')
+      .get('/test.json')
+      .reply(200, '{"foo":"bar"}', {'Content-Type': 'application/json'})
+    const expected = `{
+  "foo": "bar"
+}`
+    expect(await json.normalize('http://foo.bar/test.json')).to.be.equal(expected)
+  })
+
+  it('should throw on 404', async () => {
+    nock('http://foo.bar')
+      .get('/test.json')
+      .reply(404)
+
+    chai.use(chaiAsPromised)
+    await expect(json.normalize('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+  })
+
+  it('should throw on HTTP connection error', async () => {
+    nock('http://foo.bar')
+      .get('/test.json')
+      .replyWithError('they tripped on the server power cable')
+
+    chai.use(chaiAsPromised)
+    await expect(json.normalize('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+
+  })
+
+  it('should throw on JSON errors', async () => {
+    mock({
+      'broken.json': '{foo'
+    })
+
+    chai.use(chaiAsPromised)
+    await expect(json.normalize('broken.json')).to.be.rejectedWith(Error)
   })
 
   it('should compute a diff', async () => {
