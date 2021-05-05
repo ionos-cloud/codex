@@ -4,6 +4,7 @@ import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import BaseCommand from '../base/base-command'
 import * as locking from '../services/locking'
+import * as fs from 'fs'
 
 export default class Patch extends BaseCommand {
   static description = 'list, remove or display patches or edit their description'
@@ -25,12 +26,18 @@ export default class Patch extends BaseCommand {
       description: 'list all the patches'
     }),
     rm: flags.integer({
-      char: 'r', required: false, exclusive: ['message', 'list'],
+      char: 'r', required: false, exclusive: ['message', 'list', 'get'],
       description: 'remove the specified patch'
     }),
     get: flags.integer({
       char: 'g', required: false, exclusive: ['message', 'list', 'rm'],
       description: 'display the contents of the specified patch'
+    }),
+    output: flags.string({
+      char: 'o',
+      description: 'save patch to the specified file',
+      required: false,
+      dependsOn: [ 'get' ]
     })
   }
 
@@ -96,8 +103,13 @@ export default class Patch extends BaseCommand {
 
       const content = await codex.getPatch(this.flags.get)
 
-      ui.eol()
-      ui.printPatch(content)
+      if (this.flags.output !== undefined) {
+        fs.writeFileSync(this.flags.output, content)
+      } else {
+        ui.eol()
+        ui.printPatch(content)
+      }
+
     }
   }
 
