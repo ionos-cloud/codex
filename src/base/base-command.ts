@@ -10,7 +10,7 @@ export default abstract class BaseCommand extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
-    debug: flags.boolean({char: 'd', default: false}),
+    debug: flags.boolean({char: 'd', default: false, description: 'show debug information'}),
   }
 
   static args: any[] = []

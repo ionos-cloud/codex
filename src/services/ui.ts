@@ -22,7 +22,7 @@ function info(msg: string) {
 function debug(msg: string) {
   if (runConfig.debug) {
     // eslint-disable-next-line no-console
-    process.stdout.write(`${indent}${chalk.gray('  ⇢ (debug)')} ${chalk.gray(msg)}\n`)
+    process.stderr.write(`${indent}${chalk.gray('  ⇢ (debug)')} ${chalk.gray(msg)}\n`)
   }
 }
 
