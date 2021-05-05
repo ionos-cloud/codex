@@ -103,13 +103,12 @@ export default class Patch extends BaseCommand {
 
       const content = await codex.getPatch(this.flags.get)
 
-      if (this.flags.output !== undefined) {
-        fs.writeFileSync(this.flags.output, content)
-      } else {
+      if (this.flags.output === undefined) {
         ui.eol()
         ui.printPatch(content)
+      } else {
+        fs.writeFileSync(this.flags.output, content)
       }
-
     }
   }
 
