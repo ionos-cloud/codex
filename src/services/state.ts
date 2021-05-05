@@ -1,6 +1,7 @@
 import config from './config'
 import ui from './ui'
 import fs from 'fs'
+import * as json from './json'
 
 export enum Mode {
   IDLE,
@@ -79,8 +80,8 @@ export class State {
       version: this.version
     }
     fs.mkdirSync(config.dir, {recursive: true})
-    ui.debug(`saving state: ${JSON.stringify(state)}`)
-    fs.writeFileSync(this.getStateFilePath(), JSON.stringify(state, null, 2))
+    ui.debug(`saving state: ${json.serialize(state)}`)
+    fs.writeFileSync(this.getStateFilePath(), json.serialize(state))
     return this
   }
 

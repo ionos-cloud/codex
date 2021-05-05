@@ -2,6 +2,7 @@ import config from './config'
 import axios from 'axios'
 import { cli } from 'cli-ux'
 import ui from './ui'
+import * as json from './json'
 
 /**
  * login and obtain a jwt token
@@ -26,7 +27,7 @@ export async function login(username: string, password: string): Promise<string>
       throw new Error('login failed: invalid username or password')
     }
     cli.error(`login request failed with HTTP status code ${error.response.status}`)
-    cli.error(`response was: ${JSON.stringify(error.response.data, null, 2)}`)
+    cli.error(`response was: ${json.serialize(error.response.data, 2)}`)
     throw new Error('login failed')
   }
 }
@@ -46,7 +47,7 @@ export async function validate(token: string): Promise<boolean> {
       return false
     }
     ui.error(`auth validation request failed with HTTP status code ${error.response.status}`)
-    ui.error(`response was: ${JSON.stringify(error.response.data, null, 2)}`)
+    ui.error(`response was: ${json.serialize(error.response.data, 2)}`)
     ui.warning('you will need to login again')
     return false
   }

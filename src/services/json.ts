@@ -3,6 +3,9 @@ import * as diff from 'diff'
 import axios from 'axios'
 import path from 'path'
 import ui from './ui'
+import * as json from './json'
+
+const DEFAULT_JSON_INDENT = 4
 
 export interface JsonSemanticDiff {
   diff?: string;
@@ -38,15 +41,19 @@ export async function jsonRead(file: string): Promise<Record<any, any>> {
   return json
 }
 
+export function serialize(obj: Record<string, any>, indent = DEFAULT_JSON_INDENT): string {
+  return JSON.stringify(obj, null, indent)
+}
+
 /* normalizes a possibly minified json by converting it to 2 spaces indented json string */
-export async function normalize(file: string, indent = 2): Promise<string> {
-  return JSON.stringify(jsonRead(file), null, indent)
+export async function normalizeFile(file: string, indent = DEFAULT_JSON_INDENT): Promise<string> {
+  return serialize(await jsonRead(file), indent)
 }
 
 /* create a patch from the diff of two json files */
 export async function computePatch(file1: string, file2: string): Promise<string> {
-  const f1 = await normalize(file1)
-  const f2 = await normalize(file2)
+  const f1 = await normalizeFile(file1)
+  const f2 = await normalizeFile(file2)
   ui.debug('creating patch')
   const d = await diff.createTwoFilesPatch(path.basename(file1), path.basename(file2), f1, f2)
   ui.debug('done')
@@ -121,12 +128,12 @@ export function semanticDiff(from: Record<any, any>, to: Record<any, any>, ignor
           break
         case 'object':
           if (Array.isArray(from[key])) {
-            const serFrom = JSON.stringify(from[key], null, 2)
-            const serTo = JSON.stringify(to[key], null, 2)
+            const serFrom = serialize(from[key])
+            const serTo = serialize(to[key])
             if (serFrom !== serTo) {
               addChange(ret, key,
                 {
-                  diff: diff.createPatch(key, JSON.stringify(from[key], null, 2), JSON.stringify(to[key], null, 2))
+                  diff: diff.createPatch(key, json.serialize(from[key]), json.serialize(to[key]))
                 }
               )
             }
@@ -140,7 +147,7 @@ export function semanticDiff(from: Record<any, any>, to: Record<any, any>, ignor
       }
     } else {
       addChange(ret, key, {
-        diff: diff.createPatch(key, JSON.stringify(from[key], null, 2), JSON.stringify(to[key], null, 2))
+        diff: diff.createPatch(key, json.serialize(from[key]), json.serialize(to[key]))
       })
     }
 

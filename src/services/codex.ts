@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import vdc from '../services/vdc'
+import * as json from '../services/json'
 import * as swagger from './swagger'
 import * as diff from 'diff'
 import ui from './ui'
@@ -19,7 +20,7 @@ export class Codex {
 
   static defaultVersion = 5
 
-  static jsonIndent = 2
+  static jsonIndent = 4
 
   readonly version: number
   baseline = ''
@@ -39,7 +40,7 @@ export class Codex {
     const swagger = await vdc.fetchSwaggerFile(this.version)
 
     ui.info('creating baseline')
-    await this.storage.writeBaseline(this.version, JSON.stringify(swagger, null, Codex.jsonIndent))
+    await this.storage.writeBaseline(this.version, json.serialize(swagger, Codex.jsonIndent))
 
     state.setIdle().save()
 
@@ -175,14 +176,14 @@ export class Codex {
       throw new Error(`illegal state found: upstream patch level (${upstreamPatchLevel}) is greater than our maximum patch level (${maxPatchLevel})`)
     }
 
-    const normalizedUpstream = JSON.stringify(upstream, null, 2)
-    const normalizedBaseline = JSON.stringify(this.baselineJson, null, 2)
+    const normalizedUpstream = json.serialize(upstream)
+    const normalizedBaseline = json.serialize(this.baselineJson)
     if ((this.versionPatchLevel !== upstreamPatchLevel) || (normalizedBaseline !== normalizedUpstream)) {
       /* change detected */
 
       let patch = ''
       if (upstreamPatchLevel > 0) {
-        const compiled = JSON.stringify(JSON.parse(await this.compile(upstreamPatchLevel)), null, 2)
+        const compiled = json.serialize(JSON.parse(await this.compile(upstreamPatchLevel)))
         patch = diff.createPatch('swagger.json', compiled, normalizedUpstream)
       } else {
         patch = diff.createPatch('swagger.json', normalizedBaseline, normalizedUpstream)

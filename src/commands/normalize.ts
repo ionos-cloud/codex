@@ -10,7 +10,7 @@ export default class Normalize extends Command {
     indent: flags.integer({char: 'i', default: 2})
   }
 
-  static args = [{name: 'file', required: true, description: 'file to normalize'}]
+  static args = [{name: 'file', required: true, description: 'file to normalizeFile'}]
 
   protected async catch(err: any) {
     ui.error(err.message)
@@ -19,6 +19,6 @@ export default class Normalize extends Command {
 
   async run() {
     const {args, flags} = this.parse(Normalize)
-    process.stdout.write(await json.normalize(args.file, flags.indent))
+    process.stdout.write(await json.normalizeFile(args.file, flags.indent))
   }
 }

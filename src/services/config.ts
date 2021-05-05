@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import ui from './ui'
+import * as json from './json'
 
 export interface ConfigModel {
   authUrl: string;
@@ -67,7 +68,7 @@ export class Config {
 
   save() {
     fs.mkdirSync(this.dir, {recursive: true})
-    fs.writeFileSync(this.path, JSON.stringify(this.data, null, 2))
+    fs.writeFileSync(this.path, json.serialize(this.data))
   }
 
   init() {

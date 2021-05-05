@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import ui from './ui'
+import * as jsonHelper from './json'
 
 export const sdkVersionSuffixPattern = /-SDK\.(\d+)/
 
@@ -51,7 +52,7 @@ export function fixPatchLevel(fileName: string, desiredPatchLevel: number) {
   if (currentLevel !== desiredPatchLevel) {
     ui.info(`adjusting patch level to ${desiredPatchLevel} in ${fileName}`)
     setPatchLevel(json, desiredPatchLevel)
-    fs.writeFileSync(fileName, JSON.stringify(json, null, 2))
+    fs.writeFileSync(fileName, jsonHelper.serialize(json))
   }
 }
 

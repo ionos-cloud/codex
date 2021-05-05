@@ -5,27 +5,27 @@ import * as json from '../../src/services/json'
 import chaiAsPromised = require('chai-as-promised')
 
 describe('json tests', () => {
-  it('should normalize files', async () => {
+  it('should normalizeFile files', async () => {
     mock(
       {
         'file.json': '{"foo": "bar"}'
       }
     )
     const expected = `{
-  "foo": "bar"
+    "foo": "bar"
 }`
-    expect(await json.normalize('file.json')).to.be.equal(expected)
+    expect(await json.normalizeFile('file.json')).to.be.equal(expected)
     mock.restore()
   })
 
-  it('should normalize via http', async () => {
+  it('should normalizeFile via http', async () => {
     nock('http://foo.bar')
       .get('/test.json')
       .reply(200, '{"foo":"bar"}', {'Content-Type': 'application/json'})
     const expected = `{
-  "foo": "bar"
+    "foo": "bar"
 }`
-    expect(await json.normalize('http://foo.bar/test.json')).to.be.equal(expected)
+    expect(await json.normalizeFile('http://foo.bar/test.json')).to.be.equal(expected)
   })
 
   it('should throw on 404', async () => {
@@ -34,7 +34,7 @@ describe('json tests', () => {
       .reply(404)
 
     chai.use(chaiAsPromised)
-    await expect(json.normalize('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+    await expect(json.normalizeFile('http://foo.bar/test.json')).to.be.rejectedWith(Error)
   })
 
   it('should throw on HTTP connection error', async () => {
@@ -43,7 +43,7 @@ describe('json tests', () => {
       .replyWithError('they tripped on the server power cable')
 
     chai.use(chaiAsPromised)
-    await expect(json.normalize('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+    await expect(json.normalizeFile('http://foo.bar/test.json')).to.be.rejectedWith(Error)
 
   })
 
@@ -53,7 +53,7 @@ describe('json tests', () => {
     })
 
     chai.use(chaiAsPromised)
-    await expect(json.normalize('broken.json')).to.be.rejectedWith(Error)
+    await expect(json.normalizeFile('broken.json')).to.be.rejectedWith(Error)
   })
 
   it('should compute a diff', async () => {

@@ -2,6 +2,7 @@ import chai, { expect } from 'chai'
 import { Codex } from '../../src/services/codex'
 import { idleState } from '../../src/services/state'
 import config from '../../src/services/config'
+import * as json from '../../src/services/json'
 
 import mocks from '../mocks'
 
@@ -174,7 +175,7 @@ describe('codex tests', async () => {
     const update = await codex.updateCheck()
     expect(update).to.not.be.undefined
     expect(update?.patch).to.be.not.empty
-    expect(update?.content).to.equal(JSON.stringify(upstream, null, 2))
+    expect(update?.content).to.equal(json.serialize(upstream))
 
     mock.restore()
   })
@@ -229,19 +230,19 @@ describe('codex tests', async () => {
 +++ swagger.json
 @@ -1,8 +1,8 @@
  {
-   "swagger": "2.0",
-   "info": {
-     "description": "Some description",
--    "version": "5.0",
--    "title": "CLOUD API"
-+    "version": "5.0-SDK.1",
-+    "title": "CLOUD API changed"
-   }
+     "swagger": "2.0",
+     "info": {
+         "description": "Some description",
+-        "version": "5.0",
+-        "title": "CLOUD API"
++        "version": "5.0-SDK.1",
++        "title": "CLOUD API changed"
+     }
  }
 \\ No newline at end of file
 `
     )
-    expect(update?.content).to.equal(JSON.stringify(upstream, null, 2))
+    expect(update?.content).to.equal(json.serialize(upstream))
 
     if (update !== undefined) {
       const upstreamPatchFileName = 'upstream.patch'
