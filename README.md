@@ -1,7 +1,7 @@
 @ionos-cloud/codex
 ====================
 
-VDC &amp; SDK swagger management tool
+VDC &amp; SDK swagger management tool test
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![CI](https://github.com/ionos-cloud/codex/actions/workflows/ci.yml/badge.svg)](https://github.com/ionos-cloud/codex/actions/workflows/ci.yml)
