@@ -1,7 +1,7 @@
 {
   "name": "@ionos-cloud/codex",
   "description": "VDC & SDK swagger management tool",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "author": "Florin Mihalache",
   "bin": {
     "codex": "bin/run"
