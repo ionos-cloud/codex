@@ -42,7 +42,8 @@ export default class Compile extends BaseCommand {
           data: {
             patch: error.patch,
             file: output
-          }
+          },
+          version: this.flags.version
         }).save()
         throw new Error(`applying patch ${state.data.patch} failed; please edit ${output} and than run 'codex commit' to fix the patch`)
       } else {
