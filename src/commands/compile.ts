@@ -6,6 +6,7 @@ import chalk from 'chalk'
 import { PatchError } from '../exceptions/patch-error'
 import BaseCommand from '../base/base-command'
 import state, { Mode, Status } from '../services/state'
+import * as locking from '../services/locking'
 
 export default class Compile extends BaseCommand {
   static description = 'compile baseline plus all the patches'
@@ -35,6 +36,7 @@ export default class Compile extends BaseCommand {
       content = await codex.compile(codex.getMaxPatchLevel())
     } catch (error) {
       if (error instanceof PatchError) {
+        await locking.lock()
         fs.writeFileSync(output, error.content)
         state.set({
           mode: Mode.EDIT,
