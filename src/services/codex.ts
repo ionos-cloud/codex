@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import vdc from '../services/vdc'
+import vdc from './api'
 import * as json from '../services/json'
 import * as swagger from './swagger'
 import * as diff from 'diff'
@@ -22,25 +22,23 @@ export class Codex {
 
   static jsonIndent = 4
 
-  readonly version: number
   baseline = ''
   baselineJson: Record<string, any> = {}
   patches: PatchesCollection = {}
   versionPatchLevel = 0
   storage: CodexStorage
 
-  constructor(version: number, storage: CodexStorage = new S3()) {
-    this.version = version
+  constructor(storage: CodexStorage = new S3()) {
     this.storage = storage
   }
 
   async init() {
 
     ui.info('downloading vdc swagger file')
-    const swagger = await vdc.fetchSwaggerFile(this.version)
+    const swagger = await vdc.fetchSwaggerFile()
 
     ui.info('creating baseline')
-    await this.storage.writeBaseline(this.version, json.serialize(swagger, Codex.jsonIndent))
+    await this.storage.writeBaseline(json.serialize(swagger, Codex.jsonIndent))
 
     state.setIdle().save()
 
@@ -49,9 +47,8 @@ export class Codex {
 
   async load() {
 
-    ui.info(`version: ${chalk.greenBright(`${this.version}`)}`)
     ui.debug('loading baseline')
-    this.baseline = await this.storage.readBaseline(this.version)
+    this.baseline = await this.storage.readBaseline()
 
     ui.debug('parsing baseline json')
     this.baselineJson = JSON.parse(this.baseline)

@@ -2,7 +2,6 @@ import { flags } from '@oclif/command'
 
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
-import vdc from '../services/vdc'
 import BaseCommand from '../base/base-command'
 import state, { Mode } from '../services/state'
 
@@ -30,17 +29,12 @@ export default class Update extends BaseCommand {
     output: flags.string({
       char: 'o',
       required: true
-    }),
-    'vdc-host': flags.string({description: 'vdc host'})
+    })
   }
 
   async run() {
     const codex = new Codex(this.flags.version)
     await codex.load()
-
-    if (this.flags['vdc-host'] !== undefined) {
-      vdc.host = this.flags['vdc-host']
-    }
 
     const update = await codex.updateCheck()
     if (update === undefined) {

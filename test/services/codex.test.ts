@@ -6,7 +6,7 @@ import * as json from '../../src/services/json'
 
 import mocks from '../mocks'
 
-import vdc from '../../src/services/vdc'
+import vdc from '../../src/services/api'
 import fs = require('fs')
 import mock = require('mock-fs')
 import nock = require('nock')

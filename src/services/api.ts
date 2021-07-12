@@ -1,7 +1,8 @@
 import axios from 'axios'
 import ui from './ui'
+import config from './config'
 
-export class Vdc {
+export class Api {
 
   host = 'https://api.ionos.com'
   basePath = 'cloudapi'
@@ -12,12 +13,18 @@ export class Vdc {
   }
 
   getSwaggerUrl(version: number): string {
-    return `${this.host}${this.getSwaggerPath(version)}`
+    let url = ''
+    try {
+      url = config.get('specUrl')
+    } catch {
+      url = `${this.host}${this.getSwaggerPath(version)}`
+    }
+    return url
   }
 
   async fetchSwaggerFile(version: number): Promise<Record<string, any>> {
     const url = this.getSwaggerUrl(version)
-    ui.debug(`downloading vdc swagger from ${url}`)
+    ui.debug(`downloading openapi spec from ${url}`)
     try {
       const response = await axios.get(url)
       return response.data
@@ -30,4 +37,4 @@ export class Vdc {
   }
 }
 
-export default new Vdc()
+export default new Api()

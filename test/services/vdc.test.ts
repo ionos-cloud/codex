@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import vdc from '../../src/services/vdc'
+import vdc from '../../src/services/api'
 import nock = require('nock')
 import chaiAsPromised = require('chai-as-promised')
 

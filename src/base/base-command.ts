@@ -11,6 +11,7 @@ export default abstract class BaseCommand extends Command {
   static flags = {
     help: flags.help({char: 'h'}),
     debug: flags.boolean({char: 'd', default: false, description: 'show debug information'}),
+    'spec-url': flags.string({description: 'open api spec url'})
   }
 
   static args: any[] = []
@@ -23,6 +24,11 @@ export default abstract class BaseCommand extends Command {
 
     config.load(this.config.configDir)
     state.load()
+
+    /* override spec url */
+    if (this.flags['spec-url'] !== undefined) {
+      config.set('specUrl', this.flags['spec-url'])
+    }
   }
 
   async catch(error: any) {
