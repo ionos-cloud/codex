@@ -17,7 +17,7 @@ $ npm install -g @ionos-cloud/codex
 $ codex COMMAND
 running command...
 $ codex (-v|--version|version)
-@ionos-cloud/codex/2.1.6 darwin-x64 node-v16.0.0
+@ionos-cloud/codex/3.0.0 darwin-x64 node-v16.0.0
 $ codex --help [COMMAND]
 USAGE
   $ codex COMMAND
@@ -32,12 +32,13 @@ USAGE
 * [`codex diff FILE1 FILE2`](#codex-diff-file1-file2)
 * [`codex edit`](#codex-edit)
 * [`codex help [COMMAND]`](#codex-help-command)
-* [`codex init`](#codex-init)
+* [`codex init URL`](#codex-init-url)
 * [`codex lock`](#codex-lock)
 * [`codex login`](#codex-login)
 * [`codex normalize FILE`](#codex-normalize-file)
 * [`codex patch`](#codex-patch)
 * [`codex sdk-changes`](#codex-sdk-changes)
+* [`codex state`](#codex-state)
 * [`codex status`](#codex-status)
 * [`codex unlock`](#codex-unlock)
 * [`codex update`](#codex-update)
@@ -56,7 +57,7 @@ OPTIONS
   -m, --message=message
 ```
 
-_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/commit.ts)_
+_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/commit.ts)_
 
 ## `codex compile`
 
@@ -67,13 +68,12 @@ USAGE
   $ codex compile
 
 OPTIONS
-  -d, --debug            show debug information
-  -h, --help             show CLI help
+  -d, --debug          show debug information
+  -h, --help           show CLI help
   -o, --output=output
-  -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/compile.ts)_
+_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/compile.ts)_
 
 ## `codex config [PATH] [VALUE]`
 
@@ -97,7 +97,7 @@ EXAMPLES
   $ codex config foo.bar value
 ```
 
-_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/config.ts)_
+_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/config.ts)_
 
 ## `codex diff FILE1 FILE2`
 
@@ -119,7 +119,7 @@ OPTIONS
   -y, --yaml           yaml
 ```
 
-_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/diff.ts)_
+_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/diff.ts)_
 
 ## `codex edit`
 
@@ -131,14 +131,13 @@ USAGE
 
 OPTIONS
   -a, --abort
-  -d, --debug            show debug information
-  -h, --help             show CLI help
+  -d, --debug          show debug information
+  -h, --help           show CLI help
   -o, --output=output
   -p, --patch=patch
-  -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/edit.ts)_
+_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/edit.ts)_
 
 ## `codex help [COMMAND]`
 
@@ -157,25 +156,26 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
-## `codex init`
+## `codex init URL`
 
 initialize a codex project in S3
 
 ```
 USAGE
-  $ codex init
+  $ codex init URL
+
+ARGUMENTS
+  URL  api spec url
 
 OPTIONS
-  -d, --debug            show debug information
-  -h, --help             show CLI help
-  -v, --version=version  [default: 5]
-  --vdc-host=vdc-host    vdc host
+  -d, --debug  show debug information
+  -h, --help   show CLI help
 
 EXAMPLE
-  $ codex init
+  $ codex init https://api.url/spec
 ```
 
-_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/init.ts)_
 
 ## `codex lock`
 
@@ -193,7 +193,7 @@ EXAMPLE
   $ codex lock
 ```
 
-_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/lock.ts)_
+_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/lock.ts)_
 
 ## `codex login`
 
@@ -213,7 +213,7 @@ EXAMPLE
   $ codex login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/login.ts)_
 
 ## `codex normalize FILE`
 
@@ -231,7 +231,7 @@ OPTIONS
   -i, --indent=indent  [default: 2]
 ```
 
-_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/normalize.ts)_
+_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/normalize.ts)_
 
 ## `codex patch`
 
@@ -250,10 +250,9 @@ OPTIONS
   -n, --number=number    patch to set message for; defaults to last patch
   -o, --output=output    save patch to the specified file
   -r, --rm=rm            remove the specified patch
-  -v, --version=version  [default: 5]
 ```
 
-_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/patch.ts)_
+_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/patch.ts)_
 
 ## `codex sdk-changes`
 
@@ -264,15 +263,30 @@ USAGE
   $ codex sdk-changes
 
 OPTIONS
-  -d, --debug            show debug information
-  -h, --help             show CLI help
-  -v, --version=version  [default: 5]
+  -d, --debug  show debug information
+  -h, --help   show CLI help
 
 EXAMPLE
   $ codex sdk-changes
 ```
 
-_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/sdk-changes.ts)_
+_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/sdk-changes.ts)_
+
+## `codex state`
+
+inspect or reset the state
+
+```
+USAGE
+  $ codex state
+
+OPTIONS
+  -d, --debug  show debug information
+  -h, --help   show CLI help
+  --reset
+```
+
+_See code: [src/commands/state.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/state.ts)_
 
 ## `codex status`
 
@@ -283,16 +297,15 @@ USAGE
   $ codex status
 
 OPTIONS
-  -d, --debug            show debug information
-  -h, --help             show CLI help
+  -d, --debug  show debug information
+  -h, --help   show CLI help
   -r, --reset
-  -v, --version=version  [default: 5]
 
 EXAMPLE
   $ codex status
 ```
 
-_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/status.ts)_
+_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/status.ts)_
 
 ## `codex unlock`
 
@@ -310,7 +323,7 @@ EXAMPLE
   $ codex unlock
 ```
 
-_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/unlock.ts)_
+_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/unlock.ts)_
 
 ## `codex update`
 
@@ -321,14 +334,12 @@ USAGE
   $ codex update
 
 OPTIONS
-  -c, --check            check if there's an update without actually performing the update
-  -d, --debug            show debug information
-  -h, --help             show CLI help
-  -o, --output=output    (required)
-  -v, --version=version  [default: 5] swagger version to work on
-  -y, --yes              answer yes to all questions; useful in CI automation
-  --vdc-host=vdc-host    vdc host
+  -c, --check          check if there's an update without actually performing the update
+  -d, --debug          show debug information
+  -h, --help           show CLI help
+  -o, --output=output  (required)
+  -y, --yes            answer yes to all questions; useful in CI automation
 ```
 
-_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v2.1.6/src/commands/update.ts)_
+_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v3.0.0/src/commands/update.ts)_
 <!-- commandsstop -->
