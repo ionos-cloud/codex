@@ -1,7 +1,4 @@
-import { flags } from '@oclif/command'
-
 import { Codex } from '../services/codex'
-import vdc from '../services/api'
 import BaseCommand from '../base/base-command'
 
 export default class Init extends BaseCommand {
@@ -12,12 +9,11 @@ export default class Init extends BaseCommand {
   ]
 
   static flags = {
-    ...BaseCommand.flags,
-    version: flags.integer({char: 'v', default: Codex.defaultVersion})
+    ...BaseCommand.flags
   }
 
   async run() {
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.init()
 
   }

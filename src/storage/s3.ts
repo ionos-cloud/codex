@@ -9,7 +9,6 @@ export class S3 implements CodexStorage {
 
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
-  static versionPrefix = 'v'
 
   s3 = new aws.S3({
     accessKeyId: config.data.s3.key,
@@ -77,46 +76,41 @@ export class S3 implements CodexStorage {
     }
   }
 
-  public getVersionPath(version: number): string {
-    return `${S3.versionPrefix}${version}`
+  public getBaselinePath(): string {
+    return `${S3.baselineFileName}`
   }
 
-  public getBaselinePath(version: number): string {
-    return `${this.getVersionPath(version)}/${S3.baselineFileName}`
+  public getPatchesPath(): string {
+    return `${S3.patchesDir}`
   }
 
-  public getPatchesPath(version: number): string {
-    return `${this.getVersionPath(version)}/${S3.patchesDir}`
+  public getPatchPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.patch`
   }
 
-  public getPatchPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.patch`
+  public getPatchDescriptionPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.txt`
   }
 
-  public getPatchDescriptionPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.txt`
+  readBaseline(): Promise<string> {
+    return this.readFile(this.getBaselinePath())
   }
 
-  readBaseline(version: number): Promise<string> {
-    return this.readFile(this.getBaselinePath(version))
+  readPatch(patch: number): Promise<string> {
+    return this.readFile(this.getPatchPath(patch))
   }
 
-  readPatch(version: number, patch: number): Promise<string> {
-    return this.readFile(this.getPatchPath(version, patch))
+  async writeBaseline(content: string) {
+    await this.writeFile(this.getBaselinePath(), content)
   }
 
-  async writeBaseline(version: number, content: string) {
-    await this.writeFile(this.getBaselinePath(version), content)
+  async writePatch(patch: number, content: string) {
+    await this.writeFile(this.getPatchPath(patch), content)
   }
 
-  async writePatch(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchPath(version, patch), content)
-  }
-
-  async readPatchDescription(version: number, patch: number): Promise<string> {
+  async readPatchDescription(patch: number): Promise<string> {
     try {
-      const d = await this.readFile(this.getPatchDescriptionPath(version, patch))
-      return d
+      return await this.readFile(this.getPatchDescriptionPath(patch))
     } catch (error) {
       ui.debug(error)
       ui.warning(`[s3] could not read patch ${patch} description: ${error.message}`)
@@ -124,13 +118,13 @@ export class S3 implements CodexStorage {
     }
   }
 
-  async writePatchDescription(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchDescriptionPath(version, patch), content)
+  async writePatchDescription(patch: number, content: string) {
+    await this.writeFile(this.getPatchDescriptionPath(patch), content)
   }
 
-  async fetchPatches(version: number): Promise<PatchesCollection> {
+  async fetchPatches(): Promise<PatchesCollection> {
     const numbers: number[] = []
-    const path = this.getPatchesPath(version) + '/'
+    const path = this.getPatchesPath() + '/'
     try {
       const data = await this.s3.listObjectsV2({
         Bucket: this.bucket,
@@ -162,7 +156,7 @@ export class S3 implements CodexStorage {
 
     const ret: PatchesCollection = {}
 
-    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(version, value)))
+    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(value)))
 
     for (let idx = 0; idx < sorted.length; idx++) {
       ret[sorted[idx]] = descriptions[idx] === undefined ? '<no description>' : descriptions[idx]
@@ -172,13 +166,13 @@ export class S3 implements CodexStorage {
 
   }
 
-  async removePatch(version: number, patch: number) {
-    await this.removeFile(this.getPatchPath(version, patch))
-    await this.removePatchDescription(version, patch)
+  async removePatch(patch: number) {
+    await this.removeFile(this.getPatchPath(patch))
+    await this.removePatchDescription(patch)
   }
 
-  async removePatchDescription(version: number, patch: number) {
-    await this.removeFile(this.getPatchDescriptionPath(version, patch))
+  async removePatchDescription(patch: number) {
+    await this.removeFile(this.getPatchDescriptionPath(patch))
   }
 
 }

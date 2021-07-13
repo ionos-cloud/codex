@@ -2,6 +2,7 @@ import config from './config'
 import ui from './ui'
 import fs from 'fs'
 import * as json from './json'
+import * as locking from './locking'
 
 export enum Mode {
   IDLE,
@@ -17,14 +18,12 @@ export interface StateModel {
   mode: Mode;
   status: Status;
   data: Record<string, any>;
-  version?: number;
 }
 
 export const idleState: StateModel = {
   mode: Mode.IDLE,
   status: Status.OK,
-  data: {},
-  version: undefined
+  data: {}
 }
 
 export class State {
@@ -34,14 +33,12 @@ export class State {
   mode: Mode = Mode.IDLE
   status: Status = Status.OK
   data: Record<string, any> = {}
-  version?: number
 
   get(): StateModel {
     return {
       mode: this.mode,
       status: this.status,
       data: this.data,
-      version: this.version
     }
   }
 
@@ -53,7 +50,6 @@ export class State {
     this.mode = state.mode
     this.status = state.status
     this.data = state.data
-    this.version = state.version
     return this
   }
 
@@ -77,11 +73,26 @@ export class State {
       mode: this.mode,
       status: this.status,
       data: this.data,
-      version: this.version
     }
     fs.mkdirSync(config.dir, {recursive: true})
     ui.debug(`saving state: ${json.serialize(state)}`)
     fs.writeFileSync(this.getStateFilePath(), json.serialize(state))
+    return this
+  }
+
+  async reset(): Promise<State> {
+    if (this.data.file !== undefined) {
+      try {
+        await locking.unlock()
+      } catch (error) {
+        ui.warning(`an error occurred while releasing the lock (ignoring): ${error.message}`)
+      }
+      ui.warning(`removing file ${this.data.file}`)
+      fs.unlinkSync(this.data.file)
+    }
+
+    this.setIdle()
+    this.save()
     return this
   }
 

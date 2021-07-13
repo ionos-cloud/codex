@@ -13,7 +13,7 @@ const DEFAULT_S3_BUCKET = 'codex'
 export interface ConfigModel {
   authUrl: string;
   lockUrl: string;
-  apiSpecUrl?: string;
+  apiSpecUrl: string;
   auth: {
     username: string;
     token: string;
@@ -56,7 +56,7 @@ export class Config {
     return path.resolve(dir, Config.fileName)
   }
 
-  load(dir: string) {
+  load(dir: string, validate = true) {
     this.dir = dir
     this.path = this.getConfigFileName(dir)
     try {
@@ -73,6 +73,11 @@ export class Config {
     } catch (error) {
       throw error
     }
+
+    if (validate) {
+      this.validate()
+    }
+
   }
 
   save() {
@@ -112,6 +117,12 @@ export class Config {
     }
     current[parts[parts.length - 1]] = value
     return this
+  }
+
+  validate() {
+    if (this.data.apiSpecUrl === undefined || this.data.apiSpecUrl === '') {
+      throw new Error('apiSpecUrl not found in config; please run `config apiSpecUrl http://your.api/spec`')
+    }
   }
 }
 

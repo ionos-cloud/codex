@@ -13,7 +13,6 @@ export default class Patch extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({char: 'v', default: Codex.defaultVersion}),
     message: flags.string({char: 'm', required: false}),
     number: flags.integer({
       char: 'n',
@@ -42,7 +41,7 @@ export default class Patch extends BaseCommand {
   }
 
   async run() {
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     if (this.flags.message) {

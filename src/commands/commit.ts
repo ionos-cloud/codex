@@ -20,18 +20,13 @@ export default class Commit extends BaseCommand {
   async run() {
 
     if (state.mode !== Mode.EDIT) {
-      throw new Error(`nothing to commit; run 'codex edit --version ${this.flags.version} first`)
+      throw new Error('nothing to commit; run `codex edit first`')
     }
 
     const patchBeingEdited = state.data.patch
-    const version = state.version
 
     if (patchBeingEdited === 0) {
       throw new Error('invalid state: patch being edited is patch number 0')
-    }
-
-    if (version === undefined) {
-      throw new Error('invalid state: unknown version')
     }
 
     const workFile = state.data.file
@@ -39,7 +34,7 @@ export default class Commit extends BaseCommand {
       throw new Error(`work file ${workFile} not found!`)
     }
 
-    const codex = new Codex(version)
+    const codex = new Codex()
     await codex.load()
 
     await auth.check()
@@ -51,7 +46,7 @@ export default class Commit extends BaseCommand {
       if (error instanceof PatchError) {
         const failedPatch = error.patch
         ui.error(`something went wrong with patch ${failedPatch}`)
-        ui.error(`please run 'codex edit --abort' followed by 'codex edit --patch ${failedPatch} -v ${version}' to fix it `)
+        ui.error(`please run 'codex edit --abort' followed by 'codex edit --patch ${failedPatch}' to fix it `)
         throw new Error('could not commit changes')
       } else {
         throw error

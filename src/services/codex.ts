@@ -53,13 +53,13 @@ export class Codex {
     ui.debug('parsing baseline json')
     this.baselineJson = JSON.parse(this.baseline)
 
-    ui.debug('parsing patch level from baseline swagger version')
+    ui.debug('parsing patch level from baseline swagger file')
     this.versionPatchLevel = this.getVersionPatchLevel()
 
     ui.info(`baseline patch level: ${chalk.greenBright(`${this.versionPatchLevel}`)}`)
 
     ui.debug('fetching patches')
-    this.patches = await this.storage.fetchPatches(this.version)
+    this.patches = await this.storage.fetchPatches()
 
     ui.info(`total patches: ${chalk.greenBright(`${Object.keys(this.patches).length}`)}`)
 
@@ -90,7 +90,7 @@ export class Codex {
    * @returns {string} content with patch applied
    */
   async applyPatch(target: string, patchNumber: number): Promise<string | boolean> {
-    return diff.applyPatch(target, await this.storage.readPatch(this.version, patchNumber))
+    return diff.applyPatch(target, await this.storage.readPatch(patchNumber))
   }
 
   getMaxPatchLevel(): number {
@@ -141,27 +141,27 @@ export class Codex {
 
   createPatch(patch: number, from: string, to: string): Codex {
     const content = diff.createPatch('swagger.json', from, to)
-    this.storage.writePatch(this.version, patch, content)
+    this.storage.writePatch(patch, content)
     return this
   }
 
   describePatch(patch: number, desc: string): Codex {
-    this.storage.writePatchDescription(this.version, patch, desc)
+    this.storage.writePatchDescription(patch, desc)
     return this
   }
 
   async getPatchDescription(patch: number): Promise<string | undefined> {
     ui.debug(`getting patch description for ${patch}`)
-    return this.storage.readPatchDescription(this.version, patch)
+    return this.storage.readPatchDescription(patch)
   }
 
   async getPatch(patch: number): Promise<string> {
-    return this.storage.readPatch(this.version, patch)
+    return this.storage.readPatch(patch)
   }
 
   async updateCheck(): Promise<UpstreamUpdateInfo | undefined> {
 
-    const upstream = await vdc.fetchSwaggerFile(this.version)
+    const upstream = await vdc.fetchSwaggerFile()
 
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
     if (this.versionPatchLevel > upstreamPatchLevel) {
@@ -178,7 +178,7 @@ export class Codex {
     if ((this.versionPatchLevel !== upstreamPatchLevel) || (normalizedBaseline !== normalizedUpstream)) {
       /* change detected */
 
-      let patch = ''
+      let patch
       if (upstreamPatchLevel > 0) {
         const compiled = json.serialize(JSON.parse(await this.compile(upstreamPatchLevel)))
         patch = diff.createPatch('swagger.json', compiled, normalizedUpstream)
@@ -201,7 +201,7 @@ export class Codex {
   }
 
   async updateBaseline(content: string) {
-    await this.storage.writeBaseline(this.version, content)
+    await this.storage.writeBaseline(content)
 
     this.baseline = content
     this.baselineJson = JSON.parse(content)
@@ -209,7 +209,7 @@ export class Codex {
 
   async removePatch(patch: number) {
     ui.info(`removing patch ${patch}`)
-    await this.storage.removePatch(this.version, patch)
+    await this.storage.removePatch(patch)
   }
 }
 

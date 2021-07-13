@@ -17,7 +17,6 @@ describe('state tests', () => {
   })
 
   it('should load the state correctly', () => {
-    state.load()
     expect(state.get()).to.deep.equal(idleState)
   })
 

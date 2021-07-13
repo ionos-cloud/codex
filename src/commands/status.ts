@@ -13,12 +13,11 @@ export default class Status extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({char: 'v', default: Codex.defaultVersion}),
     reset: flags.boolean({char: 'r', default: false})
   }
 
   async run() {
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     switch (state.mode) {

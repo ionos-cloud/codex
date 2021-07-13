@@ -1,4 +1,3 @@
-import { flags } from '@oclif/command'
 
 import { Codex } from '../services/codex'
 import BaseCommand from '../base/base-command'
@@ -14,12 +13,11 @@ export default class SdkChanges extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({char: 'v', default: Codex.defaultVersion})
   }
 
   async run() {
 
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     const baseline = codex.getBaseline()

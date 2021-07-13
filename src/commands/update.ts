@@ -11,11 +11,6 @@ export default class Update extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({
-      char: 'v',
-      default: Codex.defaultVersion,
-      description: 'swagger version to work on'
-    }),
     check: flags.boolean({
       char: 'c',
       description: 'check if there\'s an update without actually performing the update',
@@ -33,7 +28,7 @@ export default class Update extends BaseCommand {
   }
 
   async run() {
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     const update = await codex.updateCheck()
