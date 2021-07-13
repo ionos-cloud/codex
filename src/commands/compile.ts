@@ -38,7 +38,6 @@ export default class Compile extends BaseCommand {
         await locking.lock()
         fs.writeFileSync(output, error.content)
         state.set({
-          apiSpecUrl: state.apiSpecUrl,
           mode: Mode.EDIT,
           status: Status.PATCH_FAILED,
           data: {

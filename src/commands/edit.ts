@@ -105,7 +105,6 @@ export default class Edit extends BaseCommand {
       if (error instanceof PatchError) {
         fs.writeFileSync(output, compiled)
         state.set({
-          apiSpecUrl: state.apiSpecUrl,
           mode: Mode.EDIT,
           status: Status.PATCH_FAILED,
           data: {
@@ -121,7 +120,6 @@ export default class Edit extends BaseCommand {
 
     fs.writeFileSync(output, compiled)
     state.set({
-      apiSpecUrl: state.apiSpecUrl,
       mode: Mode.EDIT,
       status: Status.OK,
       data: {
