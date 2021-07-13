@@ -11,8 +11,6 @@ import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
 import { S3 } from '../storage/s3'
 import axios from 'axios'
 
-const DEFAULT_API_SPEC_URL = 'https://api.ionos.com/cloudapi/v5/swagger.json'
-
 export interface UpstreamUpdateInfo {
   content: string;
   patch: string;
