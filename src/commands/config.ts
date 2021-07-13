@@ -43,12 +43,12 @@ export default class Config extends BaseCommand {
       /* set the value */
 
       let resetState = false
-      if (this.args.path === 'apiSpecUrl') {
+      if (this.args.path === 's3.bucket') {
         /* state will be reset, warn */
         resetState = true
 
         if (state.mode !== Mode.IDLE) {
-          ui.warning('You\'re currently editing a patch; changing the api will result in the state being reset')
+          ui.warning('You\'re currently editing a patch; changing the bucket will result in the state being reset')
           const { Toggle } = require('enquirer')
           const prompt = new Toggle({
             message: 'Are you sure you want to reset the state?',
@@ -70,7 +70,6 @@ export default class Config extends BaseCommand {
 
       if (resetState) {
         ui.info('resetting state')
-        state.apiSpecUrl = config.data.apiSpecUrl
         await state.reset()
       }
     }

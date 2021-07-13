@@ -1,6 +1,6 @@
 import aws = require('aws-sdk')
 
-import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
+import { CodexStorage, ApiConfig, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
 import ui from '../services/ui'
 import { basename } from 'path'
@@ -9,6 +9,7 @@ export class S3 implements CodexStorage {
 
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
+  static apiConfigFileName = 'api-config.json'
 
   s3 = new aws.S3({
     accessKeyId: config.data.s3.key,
@@ -17,9 +18,16 @@ export class S3 implements CodexStorage {
     region: config.data.s3.region,
   })
 
+  apiConfig?: ApiConfig
+
   bucket = config.data.s3.bucket
 
   constructor() {
+
+    if (config.data.s3.bucket === undefined || config.data.s3.bucket.trim().length === 0) {
+      throw new Error('[s3] invalid s3 config: missing bucket; run \'codex config s3.bucket <your s3 bucket>\'')
+    }
+
     if (config.data.s3.key === undefined || config.data.s3.key.trim().length === 0) {
       throw new Error('[s3] invalid s3 config: missing key; run \'codex config s3.key <your s3 key>\'')
     }
@@ -77,11 +85,11 @@ export class S3 implements CodexStorage {
   }
 
   public getBaselinePath(): string {
-    return `${S3.baselineFileName}`
+    return S3.baselineFileName
   }
 
   public getPatchesPath(): string {
-    return `${S3.patchesDir}`
+    return S3.patchesDir
   }
 
   public getPatchPath(patchNumber: number): string {
@@ -90,6 +98,14 @@ export class S3 implements CodexStorage {
 
   public getPatchDescriptionPath(patchNumber: number): string {
     return `${this.getPatchesPath()}/${patchNumber}.txt`
+  }
+
+  public getApiConfigPath(): string {
+    return S3.apiConfigFileName
+  }
+
+  readApiConfig(): Promise<ApiConfig> {
+    return this.readFile(this.getApiConfigPath()).then(data => JSON.parse(data))
   }
 
   readBaseline(): Promise<string> {
@@ -175,4 +191,15 @@ export class S3 implements CodexStorage {
     await this.removeFile(this.getPatchDescriptionPath(patch))
   }
 
+  async getApiConfig(): Promise<ApiConfig> {
+    if (this.apiConfig === undefined) {
+      this.apiConfig = await this.readApiConfig()
+    }
+
+    return this.apiConfig
+  }
+
+  async writeApiConfig(apiConfig: ApiConfig) {
+    await this.writeFile(this.getApiConfigPath(), JSON.stringify(apiConfig, null, 2))
+  }
 }

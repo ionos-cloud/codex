@@ -1,6 +1,5 @@
 import fs from 'fs'
 
-import vdc from './api'
 import * as json from '../services/json'
 import * as swagger from './swagger'
 import * as diff from 'diff'
@@ -10,6 +9,9 @@ import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
 import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
 import { S3 } from '../storage/s3'
+import axios from 'axios'
+
+const DEFAULT_API_SPEC_URL = 'https://api.ionos.com/cloudapi/v5/swagger.json'
 
 export interface UpstreamUpdateInfo {
   content: string;
@@ -17,8 +19,6 @@ export interface UpstreamUpdateInfo {
 }
 
 export class Codex {
-
-  static defaultVersion = 5
 
   static jsonIndent = 4
 
@@ -32,10 +32,15 @@ export class Codex {
     this.storage = storage
   }
 
-  async init() {
+  async init(apiSpecUrl: string) {
 
-    ui.info('downloading vdc swagger file')
-    const swagger = await vdc.fetchSwaggerFile()
+    ui.info('downloading api spec file')
+    const swagger = await this.fetchSwaggerFile(apiSpecUrl)
+
+    ui.info('creating api config')
+    await this.storage.writeApiConfig({
+      specUrl: apiSpecUrl
+    })
 
     ui.info('creating baseline')
     await this.storage.writeBaseline(json.serialize(swagger, Codex.jsonIndent))
@@ -46,6 +51,9 @@ export class Codex {
   }
 
   async load() {
+
+    ui.debug('loading api config')
+    await this.storage.getApiConfig()
 
     ui.debug('loading baseline')
     this.baseline = await this.storage.readBaseline()
@@ -161,7 +169,7 @@ export class Codex {
 
   async updateCheck(): Promise<UpstreamUpdateInfo | undefined> {
 
-    const upstream = await vdc.fetchSwaggerFile()
+    const upstream = await this.fetchSwaggerFile()
 
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
     if (this.versionPatchLevel > upstreamPatchLevel) {
@@ -210,6 +218,23 @@ export class Codex {
   async removePatch(patch: number) {
     ui.info(`removing patch ${patch}`)
     await this.storage.removePatch(patch)
+  }
+
+  async fetchSwaggerFile(specUrl?: string): Promise<Record<string, any>> {
+
+    specUrl = specUrl || (await this.storage.getApiConfig()).specUrl
+
+    ui.debug(`downloading openapi spec from ${specUrl}`)
+
+    try {
+      const response = await axios.get(specUrl)
+      return response.data
+    } catch (error) {
+      if (error.response !== undefined && error.response.status !== undefined && error.response.status === 404) {
+        throw new Error(`swagger file not found at ${specUrl}`)
+      }
+      throw error
+    }
   }
 }
 

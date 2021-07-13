@@ -33,11 +33,11 @@ export default class Update extends BaseCommand {
 
     const update = await codex.updateCheck()
     if (update === undefined) {
-      ui.info('no VDC upstream updates found')
+      ui.info('no upstream api spec updates found')
       process.exit()
     }
 
-    ui.warning('updates found in VDC swagger')
+    ui.warning('updates found in upstream api spec')
 
     if (state.mode === Mode.EDIT) {
       throw new Error('you are currently in edit mode and cannot update the baseline')

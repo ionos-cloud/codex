@@ -1,4 +1,4 @@
-import { CodexStorage, PatchesCollection } from '../../src/contract/codex-storage'
+import { CodexStorage, ApiConfig, PatchesCollection } from '../../src/contract/codex-storage'
 import { basename } from 'path'
 import ui from '../../src/services/ui'
 
@@ -6,7 +6,7 @@ export class Storage implements CodexStorage {
 
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
-  static versionPrefix = 'v'
+  static apiConfigFileName = 'api-config.json'
 
   fsMock: Record<string, any> = {}
 
@@ -89,6 +89,14 @@ export class Storage implements CodexStorage {
 
   public getPatchDescriptionPath(patchNumber: number): string {
     return `${this.getPatchesPath()}/${patchNumber}.txt`
+  }
+
+  public getApiConfigPath(): string {
+    return Storage.apiConfigFileName
+  }
+
+  async getApiConfig(): Promise<ApiConfig> {
+    return this.readFile(this.getApiConfigPath()).then(data => JSON.parse(data))
   }
 
   readBaseline(): Promise<string> {
@@ -182,6 +190,10 @@ export class Storage implements CodexStorage {
     } catch (error) {
       return false
     }
+  }
+
+  async writeApiConfig(apiConfig: ApiConfig) {
+    await this.writeFile(this.getApiConfigPath(), JSON.stringify(apiConfig, null, 2))
   }
 
 }

@@ -1,5 +1,9 @@
 export type PatchesCollection = {[key: number]: string}
 
+export interface ApiConfig {
+  specUrl: string;
+}
+
 export interface CodexStorage {
   readBaseline(): Promise<string>;
   writeBaseline(content: string): void;
@@ -10,4 +14,6 @@ export interface CodexStorage {
   removePatch(patch: number): void;
   removePatchDescription(patch: number): void;
   fetchPatches(): Promise<PatchesCollection>;
+  getApiConfig(): Promise<ApiConfig>;
+  writeApiConfig(apiConfig: ApiConfig): void;
 }

@@ -5,7 +5,6 @@ import * as json from './json'
 
 const DEFAULT_AUTH_API_URL = 'https://dashboard.platform.ionos.org/gph--service-auth'
 const DEFAULT_LOCK_API_URL = 'https://dashboard.platform.ionos.org/gph--service-lock'
-const DEFAULT_API_SPEC_URL = 'https://api.ionos.com/cloudapi/v5/swagger.json'
 const DEFAULT_S3_ENDPOINT = 's3-de-central.profitbricks.com'
 const DEFAULT_S3_REGION = 'de'
 const DEFAULT_S3_BUCKET = 'codex'
@@ -13,7 +12,6 @@ const DEFAULT_S3_BUCKET = 'codex'
 export interface ConfigModel {
   authUrl: string;
   lockUrl: string;
-  apiSpecUrl: string;
   auth: {
     username: string;
     token: string;
@@ -30,7 +28,6 @@ export interface ConfigModel {
 export const defaultConfig: ConfigModel = {
   authUrl: DEFAULT_AUTH_API_URL,
   lockUrl: DEFAULT_LOCK_API_URL,
-  apiSpecUrl: DEFAULT_API_SPEC_URL,
   auth: {
     username: '',
     token: ''
@@ -120,8 +117,19 @@ export class Config {
   }
 
   validate() {
-    if (this.data.apiSpecUrl === undefined || this.data.apiSpecUrl === '') {
-      throw new Error('apiSpecUrl not found in config; please run `config apiSpecUrl http://your.api/spec`')
+
+    const isEmpty = (str: string | undefined | null) => str === undefined || str === null || str.trim() === ''
+
+    if (isEmpty(this.data.s3.bucket)) {
+      throw new Error('s3.bucket not found in config; please run `codex config s3.bucket YOUR_BUCKET_NAME`')
+    }
+
+    if (isEmpty(this.data.s3.key)) {
+      throw new Error('s3.key not found in config; please run `codex config s3.key YOUR_S3_KEY`')
+    }
+
+    if (isEmpty(this.data.s3.secret)) {
+      throw new Error('s3.secret not found in config; please run `codex config s3.secret YOUR_S3_SECRET`')
     }
   }
 }

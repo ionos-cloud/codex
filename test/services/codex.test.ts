@@ -29,7 +29,8 @@ describe('codex tests', async () => {
     const codex = new Codex(storageMock)
 
     storageMock.addMock({
-      'baseline.json': JSON.stringify(baseline, null, 2),
+      [storageMock.getApiConfigPath()]: JSON.stringify(mocks.mockApiConfig, null, 2),
+      [storageMock.getBaselinePath()]: JSON.stringify(baseline, null, 2),
       patches
     })
     codex.storage = storageMock
@@ -45,7 +46,7 @@ describe('codex tests', async () => {
   })
 
   const mockVdc = (content: Record<string, any>) => {
-    const parts = config.data.apiSpecUrl.split('://')
+    const parts = mocks.mockApiConfig.specUrl.split('://')
     const proto = parts[0]
     const host = parts[1].substr(0, parts[1].indexOf('/'))
     const baseUrl = parts[1].substr(parts[1].indexOf('/') + 1)
@@ -62,7 +63,7 @@ describe('codex tests', async () => {
     mockVdc(content)
 
     mock()
-    await codex.init()
+    await codex.init(mocks.mockApiConfig.specUrl)
     expect(storageMock.isDir(storageMock.getPatchesPath()), 'patches path exists').to.eq(true)
     expect(storageMock.exists(storageMock.getBaselinePath()), 'baseline exists').to.eq(true)
     expect(codex.getBaselineJSON(), 'baseline content').to.deep.equal(content)
