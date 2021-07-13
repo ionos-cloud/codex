@@ -1,4 +1,4 @@
-import { CodexStorage, PatchesCollection } from '../../src/contract/codex-storage'
+import { CodexStorage, ApiConfig, PatchesCollection } from '../../src/contract/codex-storage'
 import { basename } from 'path'
 import ui from '../../src/services/ui'
 
@@ -6,7 +6,7 @@ export class Storage implements CodexStorage {
 
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
-  static versionPrefix = 'v'
+  static apiConfigFileName = 'api-config.json'
 
   fsMock: Record<string, any> = {}
 
@@ -75,45 +75,49 @@ export class Storage implements CodexStorage {
     delete current[parts[parts.length - 1]]
   }
 
-  public getVersionPath(version: number): string {
-    return `${Storage.versionPrefix}${version}`
+  public getBaselinePath(): string {
+    return Storage.baselineFileName
   }
 
-  public getBaselinePath(version: number): string {
-    return `${this.getVersionPath(version)}/${Storage.baselineFileName}`
+  public getPatchesPath(): string {
+    return Storage.patchesDir
   }
 
-  public getPatchesPath(version: number): string {
-    return `${this.getVersionPath(version)}/${Storage.patchesDir}`
+  public getPatchPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.patch`
   }
 
-  public getPatchPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.patch`
+  public getPatchDescriptionPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.txt`
   }
 
-  public getPatchDescriptionPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.txt`
+  public getApiConfigPath(): string {
+    return Storage.apiConfigFileName
   }
 
-  readBaseline(version: number): Promise<string> {
-    return this.readFile(this.getBaselinePath(version))
+  async getApiConfig(): Promise<ApiConfig> {
+    return this.readFile(this.getApiConfigPath()).then(data => JSON.parse(data))
   }
 
-  readPatch(version: number, patch: number): Promise<string> {
-    return this.readFile(this.getPatchPath(version, patch))
+  readBaseline(): Promise<string> {
+    return this.readFile(this.getBaselinePath())
   }
 
-  async writeBaseline(version: number, content: string) {
-    await this.writeFile(this.getBaselinePath(version), content)
+  readPatch(patch: number): Promise<string> {
+    return this.readFile(this.getPatchPath(patch))
   }
 
-  async writePatch(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchPath(version, patch), content)
+  async writeBaseline(content: string) {
+    await this.writeFile(this.getBaselinePath(), content)
   }
 
-  async readPatchDescription(version: number, patch: number): Promise<string> {
+  async writePatch(patch: number, content: string) {
+    await this.writeFile(this.getPatchPath(patch), content)
+  }
+
+  async readPatchDescription(patch: number): Promise<string> {
     try {
-      const d = await this.readFile(this.getPatchDescriptionPath(version, patch))
+      const d = await this.readFile(this.getPatchDescriptionPath(patch))
       return d
     } catch (error) {
       ui.debug(error)
@@ -122,22 +126,18 @@ export class Storage implements CodexStorage {
     }
   }
 
-  async writePatchDescription(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchDescriptionPath(version, patch), content)
+  async writePatchDescription(patch: number, content: string) {
+    await this.writeFile(this.getPatchDescriptionPath(patch), content)
   }
 
-  async fetchPatches(version: number): Promise<PatchesCollection> {
+  async fetchPatches(): Promise<PatchesCollection> {
     const numbers: number[] = []
 
-    if (this.fsMock[this.getVersionPath(version)] === undefined) {
-      throw new Error(`version ${version} doesn't exist`)
+    if (this.fsMock[Storage.patchesDir] === undefined) {
+      throw new Error('patches path not found')
     }
 
-    if (this.fsMock[this.getVersionPath(version)][Storage.patchesDir] === undefined) {
-      throw new Error(`patches path not found for version ${version}`)
-    }
-
-    const patchesStore = this.fsMock[this.getVersionPath(version)][Storage.patchesDir]
+    const patchesStore = this.fsMock[Storage.patchesDir]
 
     try {
 
@@ -160,7 +160,7 @@ export class Storage implements CodexStorage {
 
     const ret: PatchesCollection = {}
 
-    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(version, value)))
+    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(value)))
 
     for (let idx = 0; idx < sorted.length; idx++) {
       ret[sorted[idx]] = descriptions[idx] === undefined ? '<no description>' : descriptions[idx]
@@ -170,13 +170,13 @@ export class Storage implements CodexStorage {
 
   }
 
-  async removePatch(version: number, patch: number) {
-    await this.removeFile(this.getPatchPath(version, patch))
-    await this.removePatchDescription(version, patch)
+  async removePatch(patch: number) {
+    await this.removeFile(this.getPatchPath(patch))
+    await this.removePatchDescription(patch)
   }
 
-  async removePatchDescription(version: number, patch: number) {
-    await this.removeFile(this.getPatchDescriptionPath(version, patch))
+  async removePatchDescription(patch: number) {
+    await this.removeFile(this.getPatchDescriptionPath(patch))
   }
 
   isDir(path: string): boolean {
@@ -190,6 +190,10 @@ export class Storage implements CodexStorage {
     } catch (error) {
       return false
     }
+  }
+
+  async writeApiConfig(apiConfig: ApiConfig) {
+    await this.writeFile(this.getApiConfigPath(), JSON.stringify(apiConfig, null, 2))
   }
 
 }

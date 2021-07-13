@@ -10,7 +10,7 @@ export default abstract class BaseCommand extends Command {
 
   static flags = {
     help: flags.help({char: 'h'}),
-    debug: flags.boolean({char: 'd', default: false, description: 'show debug information'}),
+    debug: flags.boolean({char: 'd', default: false, description: 'show debug information'})
   }
 
   static args: any[] = []
@@ -21,7 +21,8 @@ export default abstract class BaseCommand extends Command {
     this.args = args
     runConfig.debug = this.flags.debug
 
-    config.load(this.config.configDir)
+    const skipConfigValidation = (this as {[key: string]: any}).skipConfigValidation
+    config.load(this.config.configDir, !skipConfigValidation)
     state.load()
   }
 

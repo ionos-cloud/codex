@@ -17,14 +17,13 @@ export default class Edit extends BaseCommand {
     ...BaseCommand.flags,
     patch: flags.integer({char: 'p', required: false, default: 0}),
     output: flags.string({char: 'o', required: false}),
-    version: flags.integer({char: 'v', required: false, default: Codex.defaultVersion}),
     abort: flags.boolean({char: 'a', default: false})
   }
 
   async run() {
 
     /* compile up to the given patch and mark it as edit */
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     await auth.check()
@@ -62,7 +61,7 @@ export default class Edit extends BaseCommand {
     }
 
     if (state.mode === Mode.EDIT) {
-      throw new Error(`you are already editing patch ${state.data.patch} on version ${state.version}`)
+      throw new Error(`you are already editing patch ${state.data.patch}`)
     }
 
     const maxPatchLevel = codex.getMaxPatchLevel()
@@ -92,7 +91,7 @@ export default class Edit extends BaseCommand {
       }
     }
 
-    const output = this.flags.output || `swagger-v${this.flags.version}.json`
+    const output = this.flags.output || 'swagger.json'
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)
     }
@@ -106,13 +105,13 @@ export default class Edit extends BaseCommand {
       if (error instanceof PatchError) {
         fs.writeFileSync(output, compiled)
         state.set({
+          apiSpecUrl: state.apiSpecUrl,
           mode: Mode.EDIT,
           status: Status.PATCH_FAILED,
           data: {
             patch: error.patch,
             file: output
-          },
-          version: this.flags.version
+          }
         }).save()
         throw new Error(`applying patch ${state.data.patch} failed; please edit ${output} and than run 'codex commit' to fix the patch`)
       } else {
@@ -122,13 +121,13 @@ export default class Edit extends BaseCommand {
 
     fs.writeFileSync(output, compiled)
     state.set({
+      apiSpecUrl: state.apiSpecUrl,
       mode: Mode.EDIT,
       status: Status.OK,
       data: {
         patch: patchToEdit,
         file: output
-      },
-      version: this.flags.version
+      }
     }).save()
     ui.info(`baseline with all patches applied saved as ${chalk.blueBright(output)}; run '${chalk.yellowBright('codex commit')}' when you're done`)
     ui.info(`changes will be saved in patch number ${patchToEdit}`)

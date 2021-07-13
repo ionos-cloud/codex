@@ -1,6 +1,6 @@
 import aws = require('aws-sdk')
 
-import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
+import { CodexStorage, ApiConfig, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
 import ui from '../services/ui'
 import { basename } from 'path'
@@ -9,7 +9,7 @@ export class S3 implements CodexStorage {
 
   static baselineFileName = 'baseline.json'
   static patchesDir = 'patches'
-  static versionPrefix = 'v'
+  static apiConfigFileName = 'api-config.json'
 
   s3 = new aws.S3({
     accessKeyId: config.data.s3.key,
@@ -18,9 +18,16 @@ export class S3 implements CodexStorage {
     region: config.data.s3.region,
   })
 
+  apiConfig?: ApiConfig
+
   bucket = config.data.s3.bucket
 
   constructor() {
+
+    if (config.data.s3.bucket === undefined || config.data.s3.bucket.trim().length === 0) {
+      throw new Error('[s3] invalid s3 config: missing bucket; run \'codex config s3.bucket <your s3 bucket>\'')
+    }
+
     if (config.data.s3.key === undefined || config.data.s3.key.trim().length === 0) {
       throw new Error('[s3] invalid s3 config: missing key; run \'codex config s3.key <your s3 key>\'')
     }
@@ -77,46 +84,49 @@ export class S3 implements CodexStorage {
     }
   }
 
-  public getVersionPath(version: number): string {
-    return `${S3.versionPrefix}${version}`
+  public getBaselinePath(): string {
+    return S3.baselineFileName
   }
 
-  public getBaselinePath(version: number): string {
-    return `${this.getVersionPath(version)}/${S3.baselineFileName}`
+  public getPatchesPath(): string {
+    return S3.patchesDir
   }
 
-  public getPatchesPath(version: number): string {
-    return `${this.getVersionPath(version)}/${S3.patchesDir}`
+  public getPatchPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.patch`
   }
 
-  public getPatchPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.patch`
+  public getPatchDescriptionPath(patchNumber: number): string {
+    return `${this.getPatchesPath()}/${patchNumber}.txt`
   }
 
-  public getPatchDescriptionPath(version: number, patchNumber: number): string {
-    return `${this.getPatchesPath(version)}/${patchNumber}.txt`
+  public getApiConfigPath(): string {
+    return S3.apiConfigFileName
   }
 
-  readBaseline(version: number): Promise<string> {
-    return this.readFile(this.getBaselinePath(version))
+  readApiConfig(): Promise<ApiConfig> {
+    return this.readFile(this.getApiConfigPath()).then(data => JSON.parse(data))
   }
 
-  readPatch(version: number, patch: number): Promise<string> {
-    return this.readFile(this.getPatchPath(version, patch))
+  readBaseline(): Promise<string> {
+    return this.readFile(this.getBaselinePath())
   }
 
-  async writeBaseline(version: number, content: string) {
-    await this.writeFile(this.getBaselinePath(version), content)
+  readPatch(patch: number): Promise<string> {
+    return this.readFile(this.getPatchPath(patch))
   }
 
-  async writePatch(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchPath(version, patch), content)
+  async writeBaseline(content: string) {
+    await this.writeFile(this.getBaselinePath(), content)
   }
 
-  async readPatchDescription(version: number, patch: number): Promise<string> {
+  async writePatch(patch: number, content: string) {
+    await this.writeFile(this.getPatchPath(patch), content)
+  }
+
+  async readPatchDescription(patch: number): Promise<string> {
     try {
-      const d = await this.readFile(this.getPatchDescriptionPath(version, patch))
-      return d
+      return await this.readFile(this.getPatchDescriptionPath(patch))
     } catch (error) {
       ui.debug(error)
       ui.warning(`[s3] could not read patch ${patch} description: ${error.message}`)
@@ -124,13 +134,13 @@ export class S3 implements CodexStorage {
     }
   }
 
-  async writePatchDescription(version: number, patch: number, content: string) {
-    await this.writeFile(this.getPatchDescriptionPath(version, patch), content)
+  async writePatchDescription(patch: number, content: string) {
+    await this.writeFile(this.getPatchDescriptionPath(patch), content)
   }
 
-  async fetchPatches(version: number): Promise<PatchesCollection> {
+  async fetchPatches(): Promise<PatchesCollection> {
     const numbers: number[] = []
-    const path = this.getPatchesPath(version) + '/'
+    const path = this.getPatchesPath() + '/'
     try {
       const data = await this.s3.listObjectsV2({
         Bucket: this.bucket,
@@ -162,7 +172,7 @@ export class S3 implements CodexStorage {
 
     const ret: PatchesCollection = {}
 
-    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(version, value)))
+    const descriptions = await Promise.all(sorted.map(async (value: number) => this.readPatchDescription(value)))
 
     for (let idx = 0; idx < sorted.length; idx++) {
       ret[sorted[idx]] = descriptions[idx] === undefined ? '<no description>' : descriptions[idx]
@@ -172,13 +182,24 @@ export class S3 implements CodexStorage {
 
   }
 
-  async removePatch(version: number, patch: number) {
-    await this.removeFile(this.getPatchPath(version, patch))
-    await this.removePatchDescription(version, patch)
+  async removePatch(patch: number) {
+    await this.removeFile(this.getPatchPath(patch))
+    await this.removePatchDescription(patch)
   }
 
-  async removePatchDescription(version: number, patch: number) {
-    await this.removeFile(this.getPatchDescriptionPath(version, patch))
+  async removePatchDescription(patch: number) {
+    await this.removeFile(this.getPatchDescriptionPath(patch))
   }
 
+  async getApiConfig(): Promise<ApiConfig> {
+    if (this.apiConfig === undefined) {
+      this.apiConfig = await this.readApiConfig()
+    }
+
+    return this.apiConfig
+  }
+
+  async writeApiConfig(apiConfig: ApiConfig) {
+    await this.writeFile(this.getApiConfigPath(), JSON.stringify(apiConfig, null, 2))
+  }
 }

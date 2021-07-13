@@ -1,30 +1,26 @@
-import { flags } from '@oclif/command'
-
 import { Codex } from '../services/codex'
-import vdc from '../services/vdc'
 import BaseCommand from '../base/base-command'
 
 export default class Init extends BaseCommand {
   static description = 'initialize a codex project in S3'
 
   static examples = [
-    '$ codex init',
+    '$ codex init https://api.url/spec',
   ]
 
   static flags = {
-    ...BaseCommand.flags,
-    version: flags.integer({char: 'v', default: Codex.defaultVersion}),
-    'vdc-host': flags.string({description: 'vdc host'})
+    ...BaseCommand.flags
   }
 
+  static args = [{
+    name: 'url',
+    required: true,
+    description: 'api spec url',
+    type: 'string'
+  }]
+
   async run() {
-
-    if (this.flags['vdc-host'] !== undefined) {
-      vdc.host = this.flags['vdc-host']
-    }
-
-    const codex = new Codex(this.flags.version)
-    await codex.init()
-
+    const codex = new Codex()
+    await codex.init(this.args.url)
   }
 }

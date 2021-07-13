@@ -6,7 +6,6 @@ import * as json from '../../src/services/json'
 
 import mocks from '../mocks'
 
-import vdc from '../../src/services/vdc'
 import fs = require('fs')
 import mock = require('mock-fs')
 import nock = require('nock')
@@ -19,7 +18,7 @@ describe('codex tests', async () => {
   const mockBaseline = {info: {version: 'v5.0'}}
   const mockBaselineSDK1 = {info: {version: 'v5.0-SDK.1'}}
 
-  const mockCodex = async (baseline: Record<string, any>, version = 5, patches = {}) => {
+  const mockCodex = async (baseline: Record<string, any>, patches = {}) => {
 
     mock({
       ...mocks.state.mockFs(idleState),
@@ -27,13 +26,12 @@ describe('codex tests', async () => {
     })
 
     config.load(mocks.config.dir)
-    const codex = new Codex(version, storageMock)
+    const codex = new Codex(storageMock)
 
     storageMock.addMock({
-      [`v${version}`]: {
-        'baseline.json': JSON.stringify(baseline, null, 2),
-        patches
-      }
+      [storageMock.getApiConfigPath()]: JSON.stringify(mocks.mockApiConfig, null, 2),
+      [storageMock.getBaselinePath()]: JSON.stringify(baseline, null, 2),
+      patches
     })
     codex.storage = storageMock
 
@@ -42,39 +40,39 @@ describe('codex tests', async () => {
     return codex
   }
 
-  const mockCodexWith1Patch = (baseline: Record<string, any>, version = 5) => mockCodex(baseline, version, {
+  const mockCodexWith1Patch = (baseline: Record<string, any>) => mockCodex(baseline, {
     '1.patch': 'foo',
     '1.txt': 'bar'
   })
 
-  const mockVdc = (version: number, content: Record<string, any>) =>
-    nock(vdc.host)
-      .get(vdc.getSwaggerPath(version))
+  const mockVdc = (content: Record<string, any>) => {
+    const parts = mocks.mockApiConfig.specUrl.split('://')
+    const proto = parts[0]
+    const host = parts[1].substr(0, parts[1].indexOf('/'))
+    const baseUrl = parts[1].substr(parts[1].indexOf('/') + 1)
+    nock(`${proto}://${host}`)
+      .get(`/${baseUrl}`)
       .reply(200, JSON.stringify(content), {'Content-Type': 'application/json'})
+  }
 
   it('should create the version data correctly', async () => {
 
     const content = {info: {version: 'v5.0-SDK.1'}}
-    const version = 8
 
-    const codex = await mockCodex(mockBaseline, version)
-    nock(vdc.host)
-      .get(vdc.getSwaggerPath(version))
-      .reply(200, JSON.stringify(content), {'Content-Type': 'application/json'})
+    const codex = await mockCodex(mockBaseline)
+    mockVdc(content)
 
     mock()
-    await codex.init()
-    expect(storageMock.isDir(storageMock.getVersionPath(version))).to.eq(true)
-    expect(storageMock.isDir(storageMock.getPatchesPath(version))).to.eq(true)
-    expect(storageMock.exists(storageMock.getBaselinePath(version))).to.eq(true)
-    expect(codex.getBaselineJSON()).to.deep.equal(content)
+    await codex.init(mocks.mockApiConfig.specUrl)
+    expect(storageMock.isDir(storageMock.getPatchesPath()), 'patches path exists').to.eq(true)
+    expect(storageMock.exists(storageMock.getBaselinePath()), 'baseline exists').to.eq(true)
+    expect(codex.getBaselineJSON(), 'baseline content').to.deep.equal(content)
     mock.restore()
   })
 
   it('should count patches correctly', async () => {
-    const version = 5
 
-    const codex = await mockCodex(mockBaseline, version, {
+    const codex = await mockCodex(mockBaseline, {
       '1.patch': 'foo',
       '2.patch': 'bar',
       '3.patch': 'foo',
@@ -95,8 +93,7 @@ describe('codex tests', async () => {
   })
 
   it('should return 0 when there are no patches', async () => {
-    const version = 5
-    const codex = await mockCodex(mockBaseline, version, {'foo.txt': 'bar'})
+    const codex = await mockCodex(mockBaseline, {'foo.txt': 'bar'})
     expect(codex.getMaxPatchLevel()).to.equal(0)
     mock.restore()
   })
@@ -124,9 +121,8 @@ describe('codex tests', async () => {
   })
 
   it('should read a patch', async () => {
-    const version = 5
     const patch1 = 'foo'
-    const codex = await mockCodex(mockBaselineSDK1, version, {'1.patch': patch1})
+    const codex = await mockCodex(mockBaselineSDK1, {'1.patch': patch1})
 
     expect(await codex.getPatch(1)).to.equal(patch1)
 
@@ -134,7 +130,6 @@ describe('codex tests', async () => {
   })
 
   it('should apply a patch', async () => {
-    const version = 5
     const patchBody = `--- t1.json\t2021-03-11 17:47:51.000000000 +0200
 +++ t2.json\t2021-03-11 17:48:01.000000000 +0200
 @@ -1,3 +1,3 @@
@@ -149,7 +144,7 @@ describe('codex tests', async () => {
   "foo": "baz"
 }`
 
-    const codex = await mockCodex(mockBaselineSDK1, version, {
+    const codex = await mockCodex(mockBaselineSDK1, {
       '1.patch': patchBody
     })
 
@@ -160,17 +155,14 @@ describe('codex tests', async () => {
 
   it('should determine vdc updates', async () => {
     const upstream = {info: {version: 'v5.0-SDK.2'}}
-    const version = 5
-    const codex = await mockCodex(mockBaselineSDK1, version, {
+    const codex = await mockCodex(mockBaselineSDK1, {
       '1.patch': 'foo',
       '1.txt': 'foo desc',
       '2.patch': 'bar',
       '2.txt': 'bar desc'
     })
 
-    nock(vdc.host)
-      .get(vdc.getSwaggerPath(version))
-      .reply(200, JSON.stringify(upstream), {'Content-Type': 'application/json'})
+    mockVdc(upstream)
 
     const update = await codex.updateCheck()
     expect(update).to.not.be.undefined
@@ -183,7 +175,7 @@ describe('codex tests', async () => {
   it('should throw when upstream has a greater patch level than the number of patches',  async () => {
     const codex = await mockCodex(mockBaseline)
     const upstream = {info: {version: 'v5.0-SDK.2'}}
-    mockVdc(codex.version, upstream)
+    mockVdc(upstream)
 
     chai.use(chaiAsPromised)
     expect(codex.updateCheck()).to.eventually.be.rejectedWith(Error)
@@ -194,7 +186,7 @@ describe('codex tests', async () => {
   it('should throw when baseline patch level is greater than the upstream patch level',  async () => {
     const codex = await mockCodex(mockBaselineSDK1)
     const upstream = {info: {version: 'v5.0'}}
-    mockVdc(codex.version, upstream)
+    mockVdc(upstream)
 
     chai.use(chaiAsPromised)
     expect(codex.updateCheck()).to.eventually.be.rejectedWith(Error)
@@ -203,7 +195,6 @@ describe('codex tests', async () => {
   })
 
   it('should compute an upstream update correctly', async () => {
-    const version = 5
     const codex = await mockCodexWith1Patch({
       swagger: '2.0',
       info: {
@@ -211,7 +202,7 @@ describe('codex tests', async () => {
         version: '5.0',
         title: 'CLOUD API'
       }
-    }, version)
+    })
     const upstream = {
       swagger: '2.0',
       info: {
@@ -220,7 +211,7 @@ describe('codex tests', async () => {
         title: 'CLOUD API changed'
       }
     }
-    mockVdc(codex.version, upstream)
+    mockVdc(upstream)
 
     const update = await codex.updateCheck()
     expect(update).to.not.be.undefined
@@ -250,7 +241,7 @@ describe('codex tests', async () => {
       await codex.updateBaseline(update.content)
       expect(codex.baseline).to.equal(update.content)
       expect(codex.baselineJson).to.deep.equal(upstream)
-      expect(storageMock.exists(storageMock.getBaselinePath(version))).to.be.true
+      expect(storageMock.exists(storageMock.getBaselinePath())).to.be.true
       expect(fs.existsSync(upstreamPatchFileName), 'upstream update file not created').to.be.true
       expect(fs.readFileSync(upstreamPatchFileName).toString()).to.equal(update?.patch)
     }

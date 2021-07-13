@@ -3,6 +3,12 @@ import * as path from 'path'
 import ui from './ui'
 import * as json from './json'
 
+const DEFAULT_AUTH_API_URL = 'https://dashboard.platform.ionos.org/gph--service-auth'
+const DEFAULT_LOCK_API_URL = 'https://dashboard.platform.ionos.org/gph--service-lock'
+const DEFAULT_S3_ENDPOINT = 's3-de-central.profitbricks.com'
+const DEFAULT_S3_REGION = 'de'
+const DEFAULT_S3_BUCKET = 'codex'
+
 export interface ConfigModel {
   authUrl: string;
   lockUrl: string;
@@ -20,18 +26,18 @@ export interface ConfigModel {
 }
 
 export const defaultConfig: ConfigModel = {
-  authUrl: 'https://dashboard.platform.ionos.org/gph--service-auth',
-  lockUrl: 'https://dashboard.platform.ionos.org/gph--service-lock',
+  authUrl: DEFAULT_AUTH_API_URL,
+  lockUrl: DEFAULT_LOCK_API_URL,
   auth: {
     username: '',
     token: ''
   },
   s3: {
-    endpoint: 's3-de-central.profitbricks.com',
-    region: 'de',
+    endpoint: DEFAULT_S3_ENDPOINT,
+    region: DEFAULT_S3_REGION,
     key: '',
     secret: '',
-    bucket: 'codex'
+    bucket: DEFAULT_S3_BUCKET
   }
 }
 
@@ -47,7 +53,7 @@ export class Config {
     return path.resolve(dir, Config.fileName)
   }
 
-  load(dir: string) {
+  load(dir: string, validate = true) {
     this.dir = dir
     this.path = this.getConfigFileName(dir)
     try {
@@ -64,6 +70,11 @@ export class Config {
     } catch (error) {
       throw error
     }
+
+    if (validate) {
+      this.validate()
+    }
+
   }
 
   save() {
@@ -103,6 +114,23 @@ export class Config {
     }
     current[parts[parts.length - 1]] = value
     return this
+  }
+
+  validate() {
+
+    const isEmpty = (str: string | undefined | null) => str === undefined || str === null || str.trim() === ''
+
+    if (isEmpty(this.data.s3.bucket)) {
+      throw new Error('s3.bucket not found in config; please run `codex config s3.bucket YOUR_BUCKET_NAME`')
+    }
+
+    if (isEmpty(this.data.s3.key)) {
+      throw new Error('s3.key not found in config; please run `codex config s3.key YOUR_S3_KEY`')
+    }
+
+    if (isEmpty(this.data.s3.secret)) {
+      throw new Error('s3.secret not found in config; please run `codex config s3.secret YOUR_S3_SECRET`')
+    }
   }
 }
 

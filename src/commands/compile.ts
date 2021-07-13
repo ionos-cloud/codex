@@ -13,19 +13,18 @@ export default class Compile extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    version: flags.integer({char: 'v', required: false, default: Codex.defaultVersion}),
     output: flags.string({char: 'o', required: false})
   }
 
   async run() {
-    const codex = new Codex(this.flags.version)
+    const codex = new Codex()
     await codex.load()
 
     if (state.mode !== Mode.IDLE) {
       throw new Error('you\'re currently in edit mode; commit or abort before compiling')
     }
 
-    const output = this.flags.output || `swagger-v${this.flags.version}.json`
+    const output = this.flags.output || 'swagger.json'
 
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)
@@ -39,13 +38,13 @@ export default class Compile extends BaseCommand {
         await locking.lock()
         fs.writeFileSync(output, error.content)
         state.set({
+          apiSpecUrl: state.apiSpecUrl,
           mode: Mode.EDIT,
           status: Status.PATCH_FAILED,
           data: {
             patch: error.patch,
             file: output
-          },
-          version: this.flags.version
+          }
         }).save()
         throw new Error(`applying patch ${state.data.patch} failed; please edit ${output} and than run 'codex commit' to fix the patch`)
       } else {
