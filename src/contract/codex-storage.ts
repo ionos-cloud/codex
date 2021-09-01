@@ -1,7 +1,12 @@
+import renderers from '../renderers'
+
 export type PatchesCollection = {[key: number]: string}
+
+export type CodexFormat = keyof typeof renderers
 
 export interface ApiConfig {
   specUrl: string;
+  format: CodexFormat;
 }
 
 export interface CodexStorage {

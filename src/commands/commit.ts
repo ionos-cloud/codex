@@ -54,7 +54,7 @@ export default class Commit extends BaseCommand {
     }
 
     /* check patch level in the workFile */
-    swagger.fixPatchLevel(workFile, patchBeingEdited)
+    swagger.fixPatchLevel(workFile, patchBeingEdited, codex.getRenderer())
 
     ui.info(`saving patch ${patchBeingEdited}`)
     await codex.createPatch(patchBeingEdited, prevContent, fs.readFileSync(workFile).toString())

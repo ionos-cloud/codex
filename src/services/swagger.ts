@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import ui from './ui'
-import * as jsonHelper from './json'
+import { CodexRenderer } from '../contract/codex-renderer'
 
 export const sdkVersionSuffixPattern = /-SDK\.(\d+)/
 
@@ -21,9 +21,7 @@ export function getVersionPatchLevel(swagger: Record<string, any>): number {
     return 0
   }
 
-  const level = Number(match[1])
-
-  return level
+  return Number(match[1])
 }
 
 export function setPatchLevel(swagger: Record<string, any>, patchLevel: number) {
@@ -42,17 +40,18 @@ export function setPatchLevel(swagger: Record<string, any>, patchLevel: number) 
  * Fixes the patch level in the given file
  * @param {string} fileName - file to fix
  * @param {number} desiredPatchLevel - patch level we want in the file
+ * @param {CodexRenderer} renderer - renderer to use for reading and writing the spec
  */
-export function fixPatchLevel(fileName: string, desiredPatchLevel: number) {
+export function fixPatchLevel(fileName: string, desiredPatchLevel: number, renderer: CodexRenderer) {
 
   ui.info(`checking patch level in ${fileName}`)
 
-  const json = JSON.parse(fs.readFileSync(fileName).toString())
-  const currentLevel = getVersionPatchLevel(json)
+  const spec = renderer.unmarshal(fs.readFileSync(fileName).toString())
+  const currentLevel = getVersionPatchLevel(spec)
   if (currentLevel !== desiredPatchLevel) {
     ui.info(`adjusting patch level to ${desiredPatchLevel} in ${fileName}`)
-    setPatchLevel(json, desiredPatchLevel)
-    fs.writeFileSync(fileName, jsonHelper.serialize(json))
+    setPatchLevel(spec, desiredPatchLevel)
+    fs.writeFileSync(fileName, renderer.marshal(spec))
   }
 }
 

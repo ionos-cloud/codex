@@ -24,7 +24,7 @@ export default class Compile extends BaseCommand {
       throw new Error('you\'re currently in edit mode; commit or abort before compiling')
     }
 
-    const output = this.flags.output || 'swagger.json'
+    const output = this.flags.output || codex.getDefaultFileName()
 
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)

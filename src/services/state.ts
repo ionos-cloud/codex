@@ -1,8 +1,8 @@
 import config from './config'
 import ui from './ui'
 import fs from 'fs'
-import * as json from './json'
 import * as locking from './locking'
+import renderers from '../renderers'
 
 export enum Mode {
   IDLE,
@@ -75,8 +75,8 @@ export class State {
       data: this.data,
     }
     fs.mkdirSync(config.dir, {recursive: true})
-    ui.debug(`saving state: ${json.serialize(state)}`)
-    fs.writeFileSync(this.getStateFilePath(), json.serialize(state))
+    ui.debug(`saving state: ${renderers.json.marshal(state)}`)
+    fs.writeFileSync(this.getStateFilePath(), renderers.json.marshal(state))
     return this
   }
 

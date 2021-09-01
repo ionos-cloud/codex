@@ -2,7 +2,7 @@ import config from './config'
 import axios from 'axios'
 import ui from './ui'
 import * as auth from './auth'
-import * as json from './json'
+import renderers from '../renderers'
 
 export const lockName = 'codex'
 
@@ -36,7 +36,7 @@ export async function lock() {
         }
 
         ui.error(`error encountered while trying to acquire the lock: HTTP CODE ${error.response.status}`)
-        ui.error(json.serialize(error.response.data))
+        ui.error(renderers.json.marshal(error.response.data))
       }
       throw new Error('could not acquire the lock')
     }
@@ -54,7 +54,7 @@ export async function unlock() {
     })
   } catch (error) {
     ui.error(`error encountered while trying to release the lock: HTTP CODE ${error.response.status}`)
-    ui.error(json.serialize(error.response.data))
+    ui.error(renderers.json.marshal(error.response.data))
     throw new Error('could not release the lock')
   }
 }

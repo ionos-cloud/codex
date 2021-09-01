@@ -3,11 +3,13 @@ import aws = require('aws-sdk')
 import { CodexStorage, ApiConfig, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
 import ui from '../services/ui'
+import { DEFAULT_RENDERER } from '../renderers'
+
 import { basename } from 'path'
 
 export class S3 implements CodexStorage {
 
-  static baselineFileName = 'baseline.json'
+  static baselineFileName = 'baseline'
   static patchesDir = 'patches'
   static apiConfigFileName = 'api-config.json'
 
@@ -85,7 +87,7 @@ export class S3 implements CodexStorage {
   }
 
   public getBaselinePath(): string {
-    return S3.baselineFileName
+    return S3.baselineFileName + '.' + this.apiConfig?.format
   }
 
   public getPatchesPath(): string {
@@ -194,6 +196,7 @@ export class S3 implements CodexStorage {
   async getApiConfig(): Promise<ApiConfig> {
     if (this.apiConfig === undefined) {
       this.apiConfig = await this.readApiConfig()
+      this.apiConfig.format = this.apiConfig.format || DEFAULT_RENDERER
     }
 
     return this.apiConfig
@@ -201,5 +204,6 @@ export class S3 implements CodexStorage {
 
   async writeApiConfig(apiConfig: ApiConfig) {
     await this.writeFile(this.getApiConfigPath(), JSON.stringify(apiConfig, null, 2))
+    this.apiConfig = apiConfig
   }
 }

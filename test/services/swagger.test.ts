@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import * as swagger from '../../src/services/swagger'
 import mock = require('mock-fs')
 import * as fs from 'fs'
+import renderers from '../../src/renderers'
 
 describe('swagger tests', function () {
   it('should get the patch level', () => {
@@ -59,14 +60,14 @@ describe('swagger tests', function () {
       [fileName]: JSON.stringify(json, null, 2)
     })
 
-    swagger.fixPatchLevel(fileName, patchLevel1)
+    swagger.fixPatchLevel(fileName, patchLevel1, renderers.json)
 
     let result = JSON.parse(fs.readFileSync(fileName).toString())
 
     expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel1}`)
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel1)
 
-    swagger.fixPatchLevel(fileName, patchLevel2)
+    swagger.fixPatchLevel(fileName, patchLevel2, renderers.json)
 
     result = JSON.parse(fs.readFileSync(fileName).toString())
 
@@ -74,7 +75,7 @@ describe('swagger tests', function () {
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel2)
 
     /* not is should leave it as it is */
-    swagger.fixPatchLevel(fileName, patchLevel2)
+    swagger.fixPatchLevel(fileName, patchLevel2, renderers.json)
 
     result = JSON.parse(fs.readFileSync(fileName).toString())
 

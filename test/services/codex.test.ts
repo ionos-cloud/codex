@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import { Codex } from '../../src/services/codex'
 import { idleState } from '../../src/services/state'
 import config from '../../src/services/config'
-import * as json from '../../src/services/json'
+import renderers from '../../src/renderers'
 
 import mocks from '../mocks'
 
@@ -63,10 +63,10 @@ describe('codex tests', async () => {
     mockVdc(content)
 
     mock()
-    await codex.init(mocks.mockApiConfig.specUrl)
+    await codex.init({ specUrl: mocks.mockApiConfig.specUrl, format: 'json' })
     expect(storageMock.isDir(storageMock.getPatchesPath()), 'patches path exists').to.eq(true)
     expect(storageMock.exists(storageMock.getBaselinePath()), 'baseline exists').to.eq(true)
-    expect(codex.getBaselineJSON(), 'baseline content').to.deep.equal(content)
+    expect(codex.getBaseline(), 'baseline content').to.deep.equal(content)
     mock.restore()
   })
 
@@ -100,13 +100,13 @@ describe('codex tests', async () => {
 
   it('should read the baseline correctly', async () => {
     const codex = await mockCodex(mockBaselineSDK1)
-    expect(codex.getBaseline()).to.equal(JSON.stringify(mockBaselineSDK1, null, 2))
+    expect(codex.getBaselineString()).to.equal(JSON.stringify(mockBaselineSDK1, null, 2))
     mock.restore()
   })
 
   it('should read the baseline as a JSON', async () => {
     const codex = await mockCodex(mockBaselineSDK1)
-    expect(codex.getBaselineJSON()).to.deep.equal(mockBaselineSDK1)
+    expect(codex.getBaseline()).to.deep.equal(mockBaselineSDK1)
     mock.restore()
   })
 
@@ -167,7 +167,7 @@ describe('codex tests', async () => {
     const update = await codex.updateCheck()
     expect(update).to.not.be.undefined
     expect(update?.patch).to.be.not.empty
-    expect(update?.content).to.equal(json.serialize(upstream))
+    expect(update?.content).to.equal(renderers.json.marshal(upstream))
 
     mock.restore()
   })
@@ -221,26 +221,26 @@ describe('codex tests', async () => {
 +++ swagger.json
 @@ -1,8 +1,8 @@
  {
-     "swagger": "2.0",
-     "info": {
-         "description": "Some description",
--        "version": "5.0",
--        "title": "CLOUD API"
-+        "version": "5.0-SDK.1",
-+        "title": "CLOUD API changed"
-     }
+   "swagger": "2.0",
+   "info": {
+     "description": "Some description",
+-    "version": "5.0",
+-    "title": "CLOUD API"
++    "version": "5.0-SDK.1",
++    "title": "CLOUD API changed"
+   }
  }
 \\ No newline at end of file
 `
     )
-    expect(update?.content).to.equal(json.serialize(upstream))
+    expect(update?.content).to.equal(renderers.json.marshal(upstream))
 
     if (update !== undefined) {
       const upstreamPatchFileName = 'upstream.patch'
       codex.createNewUpstreamUpdate(update.patch, upstreamPatchFileName)
       await codex.updateBaseline(update.content)
-      expect(codex.baseline).to.equal(update.content)
-      expect(codex.baselineJson).to.deep.equal(upstream)
+      expect(codex.baselineStr).to.equal(update.content)
+      expect(codex.baseline).to.deep.equal(upstream)
       expect(storageMock.exists(storageMock.getBaselinePath())).to.be.true
       expect(fs.existsSync(upstreamPatchFileName), 'upstream update file not created').to.be.true
       expect(fs.readFileSync(upstreamPatchFileName).toString()).to.equal(update?.patch)

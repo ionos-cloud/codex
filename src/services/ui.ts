@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import runConfig from './run-config'
 import cli from 'cli-ux'
-import * as json from './json'
+import renderers from '../renderers'
 
 const indent = ''
 
@@ -36,9 +36,9 @@ function eol() {
 }
 
 function print(data: any) {
-  let str = ''
+  let str
   if (typeof data === 'object') {
-    str = json.serialize(data)
+    str = renderers.json.marshal(data)
   } else {
     str = data
   }

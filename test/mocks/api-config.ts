@@ -1,5 +1,6 @@
 import { ApiConfig } from '../../src/contract/codex-storage'
 
 export const mockApiConfig: ApiConfig = {
-  specUrl: 'https://api.mock/swagger.json'
+  specUrl: 'https://api.mock/swagger.json',
+  format: 'json'
 }

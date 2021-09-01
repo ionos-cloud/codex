@@ -1,15 +1,16 @@
 import fs from 'fs'
 
-import * as json from '../services/json'
 import * as swagger from './swagger'
 import * as diff from 'diff'
 import ui from './ui'
 import state from './state'
 import { PatchError } from '../exceptions/patch-error'
 import chalk from 'chalk'
-import { CodexStorage, PatchesCollection } from '../contract/codex-storage'
+import { ApiConfig, CodexFormat, CodexStorage, PatchesCollection } from '../contract/codex-storage'
 import { S3 } from '../storage/s3'
 import axios from 'axios'
+import { CodexRenderer } from '../contract/codex-renderer'
+import renderers, { DEFAULT_RENDERER } from '../renderers'
 
 export interface UpstreamUpdateInfo {
   content: string;
@@ -18,30 +19,33 @@ export interface UpstreamUpdateInfo {
 
 export class Codex {
 
-  static jsonIndent = 4
+  static indent = 4
+  static defaultFileName = 'swagger'
 
-  baseline = ''
-  baselineJson: Record<string, any> = {}
+  baselineStr = ''
+  baseline: Record<string, any> = {}
   patches: PatchesCollection = {}
   versionPatchLevel = 0
   storage: CodexStorage
+  renderer: CodexRenderer = renderers[DEFAULT_RENDERER]
+  apiConfig?: ApiConfig
 
   constructor(storage: CodexStorage = new S3()) {
     this.storage = storage
   }
 
-  async init(apiSpecUrl: string) {
+  async init(apiConfig: ApiConfig) {
 
     ui.info('downloading api spec file')
-    const swagger = await this.fetchSwaggerFile(apiSpecUrl)
+    const swagger = await this.fetchSwaggerFile(apiConfig.specUrl)
 
     ui.info('creating api config')
-    await this.storage.writeApiConfig({
-      specUrl: apiSpecUrl
-    })
+    this.apiConfig = apiConfig
+    await this.storage.writeApiConfig(apiConfig)
+    this.renderer = this.getRenderer(apiConfig.format)
 
     ui.info('creating baseline')
-    await this.storage.writeBaseline(json.serialize(swagger, Codex.jsonIndent))
+    await this.storage.writeBaseline(this.renderer.marshal(swagger, Codex.indent))
 
     state.setIdle().save()
 
@@ -51,13 +55,14 @@ export class Codex {
   async load() {
 
     ui.debug('loading api config')
-    await this.storage.getApiConfig()
+    this.apiConfig = await this.storage.getApiConfig()
+    this.renderer = this.getRenderer(this.apiConfig.format)
 
     ui.debug('loading baseline')
-    this.baseline = await this.storage.readBaseline()
+    this.baselineStr = await this.storage.readBaseline()
 
-    ui.debug('parsing baseline json')
-    this.baselineJson = JSON.parse(this.baseline)
+    ui.debug('parsing baseline')
+    this.baseline = this.renderer.unmarshal(this.baselineStr)
 
     ui.debug('parsing patch level from baseline swagger file')
     this.versionPatchLevel = this.getVersionPatchLevel()
@@ -71,16 +76,30 @@ export class Codex {
 
   }
 
-  getBaseline(): string {
+  getRenderer(format?: CodexFormat): CodexRenderer {
+    if (format === undefined) {
+      if (this.apiConfig?.format === undefined) {
+        throw new Error('codex.getRenderer(): format not specified and apiConfig not initialized')
+      }
+      format = this.apiConfig?.format
+    }
+    if (renderers[format] === undefined) {
+      throw new Error(`codex renderer ${format} not found`)
+    }
+
+    return renderers[format]
+  }
+
+  getBaselineString(): string {
+    return this.baselineStr
+  }
+
+  getBaseline(): Record<string, any> {
     return this.baseline
   }
 
-  getBaselineJSON(): Record<string, any> {
-    return this.baselineJson
-  }
-
   getVersionPatchLevel(): number {
-    return swagger.getVersionPatchLevel(this.baselineJson)
+    return swagger.getVersionPatchLevel(this.baseline)
   }
 
   patchExists(patch: number): boolean {
@@ -118,7 +137,7 @@ export class Codex {
     }
 
     ui.info('compiling baseline')
-    let content = this.baseline
+    let content = this.baselineStr
     if (level === 0) {
       return content
     }
@@ -145,8 +164,12 @@ export class Codex {
     return this.compile(this.getMaxPatchLevel())
   }
 
+  getDefaultFileName(): string {
+    return `${Codex.defaultFileName}.${this.apiConfig?.format}`
+  }
+
   createPatch(patch: number, from: string, to: string): Codex {
-    const content = diff.createPatch('swagger.json', from, to)
+    const content = diff.createPatch(this.getDefaultFileName(), from, to)
     this.storage.writePatch(patch, content)
     return this
   }
@@ -154,11 +177,6 @@ export class Codex {
   describePatch(patch: number, desc: string): Codex {
     this.storage.writePatchDescription(patch, desc)
     return this
-  }
-
-  async getPatchDescription(patch: number): Promise<string | undefined> {
-    ui.debug(`getting patch description for ${patch}`)
-    return this.storage.readPatchDescription(patch)
   }
 
   async getPatch(patch: number): Promise<string> {
@@ -179,17 +197,18 @@ export class Codex {
       throw new Error(`illegal state found: upstream patch level (${upstreamPatchLevel}) is greater than our maximum patch level (${maxPatchLevel})`)
     }
 
-    const normalizedUpstream = json.serialize(upstream)
-    const normalizedBaseline = json.serialize(this.baselineJson)
+    const normalizedUpstream = this.renderer.marshal(upstream)
+    const normalizedBaseline = this.renderer.marshal(this.baseline)
     if ((this.versionPatchLevel !== upstreamPatchLevel) || (normalizedBaseline !== normalizedUpstream)) {
       /* change detected */
 
       let patch
       if (upstreamPatchLevel > 0) {
-        const compiled = json.serialize(JSON.parse(await this.compile(upstreamPatchLevel)))
-        patch = diff.createPatch('swagger.json', compiled, normalizedUpstream)
+        /* unmarshal + marshal to normalize the format */
+        const compiled = this.renderer.marshal(this.renderer.unmarshal(await this.compile(upstreamPatchLevel)))
+        patch = diff.createPatch(this.getDefaultFileName(), compiled, normalizedUpstream)
       } else {
-        patch = diff.createPatch('swagger.json', normalizedBaseline, normalizedUpstream)
+        patch = diff.createPatch(this.getDefaultFileName(), normalizedBaseline, normalizedUpstream)
       }
 
       return {
@@ -209,8 +228,8 @@ export class Codex {
   async updateBaseline(content: string) {
     await this.storage.writeBaseline(content)
 
-    this.baseline = content
-    this.baselineJson = JSON.parse(content)
+    this.baselineStr = content
+    this.baseline = this.renderer.unmarshal(content)
   }
 
   async removePatch(patch: number) {
@@ -226,6 +245,11 @@ export class Codex {
 
     try {
       const response = await axios.get(specUrl)
+      if (response.headers['content-type'] === 'text/yaml') {
+        ui.debug('got an yaml spec')
+        return renderers.yaml.unmarshal(response.data)
+      }
+      ui.debug('got a json spec')
       return response.data
     } catch (error) {
       if (error.response !== undefined && error.response.status !== undefined && error.response.status === 404) {

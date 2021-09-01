@@ -1,8 +1,8 @@
 import config from '../services/config'
 import BaseCommand from '../base/base-command'
-import * as json from '../services/json'
 import ui from '../services/ui'
 import state, { Mode } from '../services/state'
+import renderers from '../renderers'
 
 export default class Config extends BaseCommand {
 
@@ -35,7 +35,7 @@ export default class Config extends BaseCommand {
 
     if (this.args.path === undefined) {
       /* display the whole config */
-      this.log(json.serialize(config.data))
+      this.log(renderers.json.marshal(config.data))
     } else if (this.args.value === undefined) {
       /* display the value */
       this.log(config.get(this.args.path))

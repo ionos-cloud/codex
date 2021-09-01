@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import ui from './ui'
-import * as json from './json'
+import renderers from '../renderers'
 
 const DEFAULT_AUTH_API_URL = 'https://dashboard.platform.ionos.org/gph--service-auth'
 const DEFAULT_LOCK_API_URL = 'https://dashboard.platform.ionos.org/gph--service-lock'
@@ -79,7 +79,7 @@ export class Config {
 
   save() {
     fs.mkdirSync(this.dir, {recursive: true})
-    fs.writeFileSync(this.path, json.serialize(this.data))
+    fs.writeFileSync(this.path, renderers.json.marshal(this.data))
   }
 
   init() {

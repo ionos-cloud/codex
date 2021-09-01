@@ -1,8 +1,9 @@
 import chai, { expect } from 'chai'
 import mock = require('mock-fs')
 import nock = require('nock')
-import * as json from '../../src/services/json'
+import * as utils from '../../src/services/utils'
 import chaiAsPromised = require('chai-as-promised')
+import renderers from '../../src/renderers'
 
 describe('json tests', () => {
   it('should normalizeFile files', async () => {
@@ -14,7 +15,7 @@ describe('json tests', () => {
     const expected = `{
     "foo": "bar"
 }`
-    expect(await json.normalizeFile('file.json')).to.be.equal(expected)
+    expect(await utils.normalizeFile('file.json', renderers.json)).to.be.equal(expected)
     mock.restore()
   })
 
@@ -25,7 +26,7 @@ describe('json tests', () => {
     const expected = `{
     "foo": "bar"
 }`
-    expect(await json.normalizeFile('http://foo.bar/test.json')).to.be.equal(expected)
+    expect(await utils.normalizeFile('http://foo.bar/test.json', renderers.json)).to.be.equal(expected)
   })
 
   it('should throw on 404', async () => {
@@ -34,7 +35,7 @@ describe('json tests', () => {
       .reply(404)
 
     chai.use(chaiAsPromised)
-    await expect(json.normalizeFile('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+    await expect(utils.normalizeFile('http://foo.bar/test.json', renderers.json)).to.be.rejectedWith(Error)
   })
 
   it('should throw on HTTP connection error', async () => {
@@ -43,7 +44,7 @@ describe('json tests', () => {
       .replyWithError('they tripped on the server power cable')
 
     chai.use(chaiAsPromised)
-    await expect(json.normalizeFile('http://foo.bar/test.json')).to.be.rejectedWith(Error)
+    await expect(utils.normalizeFile('http://foo.bar/test.json', renderers.json)).to.be.rejectedWith(Error)
 
   })
 
@@ -53,7 +54,7 @@ describe('json tests', () => {
     })
 
     chai.use(chaiAsPromised)
-    await expect(json.normalizeFile('broken.json')).to.be.rejectedWith(Error)
+    await expect(utils.normalizeFile('broken.json', renderers.json)).to.be.rejectedWith(Error)
   })
 
   it('should compute a diff', async () => {
@@ -69,7 +70,7 @@ describe('json tests', () => {
 --- file1.json
 +++ file2.json
 `
-    expect(await json.computePatch('file1.json', 'file2.json')).to.be.eq(expected)
+    expect(await utils.computePatch('file1.json', 'file2.json', renderers.json)).to.be.eq(expected)
     mock.restore()
   })
 })

@@ -20,11 +20,11 @@ export default class SdkChanges extends BaseCommand {
     const codex = new Codex()
     await codex.load()
 
-    const baseline = codex.getBaseline()
+    const baseline = codex.getBaselineString()
     const compiled = await codex.compileAll()
 
     ui.eol()
-    ui.printPatch(diff.createPatch('swagger.json', baseline, compiled))
+    ui.printPatch(diff.createPatch(codex.getDefaultFileName(), baseline, compiled))
 
   }
 }

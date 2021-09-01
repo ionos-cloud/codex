@@ -91,7 +91,7 @@ export default class Edit extends BaseCommand {
       }
     }
 
-    const output = this.flags.output || 'swagger.json'
+    const output = this.flags.output || codex.getDefaultFileName()
     if (fs.existsSync(output)) {
       throw new Error(`file ${output} already exists; please remove it first`)
     }
