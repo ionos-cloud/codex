@@ -7,12 +7,12 @@ import renderers from '../../src/renderers'
 describe('swagger tests', function () {
   it('should get the patch level', () => {
     const level = 4
-    const content = {info: {version: `v5.0-SDK.${level}`}}
+    const content = {info: {version: '5.0', [swagger.sdkPatchLevelAttr]: level}}
     expect(swagger.getVersionPatchLevel(content)).to.equal(level)
   })
 
   it('should get a 0 patch level when there\'s none', () => {
-    const content = {info: {version: 'v5.0'}}
+    const content = {info: {version: '5.0'}}
     expect(swagger.getVersionPatchLevel(content)).to.equal(0)
   })
 
@@ -22,28 +22,29 @@ describe('swagger tests', function () {
   })
 
   it('should return 0 when there\'s an invalid patch level', () => {
-    const content = {info: {version: 'v5.0-SDK.foo'}}
+    const content = {info: {version: '5.0', [swagger.sdkPatchLevelAttr]: 'foo'}}
     expect(swagger.getVersionPatchLevel(content)).to.equal(0)
   })
 
   it('should correctly set the patch level', () => {
-    const json = {
+    const json: Record<string, any> = {
       info: {
         version: '5.0'
       }
     }
     swagger.setPatchLevel(json, 3)
-    expect(json.info.version).to.be.equal('5.0-SDK.3')
+    expect(json.info[swagger.sdkPatchLevelAttr]).to.be.equal(3)
   })
 
   it('should correctly change the patch level', () => {
-    const json = {
+    const json: Record<string, any> = {
       info: {
-        version: '5.0-SDK.1'
+        version: '5.0',
+        [swagger.sdkPatchLevelAttr]: 1
       }
     }
     swagger.setPatchLevel(json, 2)
-    expect(json.info.version).to.be.equal('5.0-SDK.2')
+    expect(json.info[swagger.sdkPatchLevelAttr]).to.be.equal(2)
   })
 
   it('should correctly fix the patch level in a file', () => {
@@ -64,14 +65,14 @@ describe('swagger tests', function () {
 
     let result = JSON.parse(fs.readFileSync(fileName).toString())
 
-    expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel1}`)
+    expect(result.info[swagger.sdkPatchLevelAttr]).to.be.equal(patchLevel1)
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel1)
 
     swagger.fixPatchLevel(fileName, patchLevel2, renderers.json)
 
     result = JSON.parse(fs.readFileSync(fileName).toString())
 
-    expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel2}`)
+    expect(result.info[swagger.sdkPatchLevelAttr]).to.be.equal(patchLevel2)
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel2)
 
     /* not is should leave it as it is */
@@ -79,7 +80,7 @@ describe('swagger tests', function () {
 
     result = JSON.parse(fs.readFileSync(fileName).toString())
 
-    expect(result.info.version).to.be.equal(`5.0-SDK.${patchLevel2}`)
+    expect(result.info[swagger.sdkPatchLevelAttr]).to.be.equal(patchLevel2)
     expect(swagger.getVersionPatchLevel(result)).to.equal(patchLevel2)
 
     mock.restore()
@@ -88,7 +89,7 @@ describe('swagger tests', function () {
   it('should fill in missing info', () => {
     const dummy: Record<string, any> = {}
     swagger.setPatchLevel(dummy, 3)
-    expect(dummy.info).to.have.property('version')
-    expect(dummy.info.version).to.be.equal('-SDK.3')
+    expect(dummy.info).to.have.property(swagger.sdkPatchLevelAttr)
+    expect(dummy.info[swagger.sdkPatchLevelAttr]).to.be.equal(3)
   })
 })

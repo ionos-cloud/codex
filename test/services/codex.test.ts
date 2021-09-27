@@ -3,6 +3,7 @@ import { Codex } from '../../src/services/codex'
 import { idleState } from '../../src/services/state'
 import config from '../../src/services/config'
 import renderers from '../../src/renderers'
+import * as swagger from '../../src/services/swagger'
 
 import mocks from '../mocks'
 
@@ -16,7 +17,7 @@ describe('codex tests', async () => {
   const storageMock = new mocks.Storage({})
 
   const mockBaseline = {info: {version: 'v5.0'}}
-  const mockBaselineSDK1 = {info: {version: 'v5.0-SDK.1'}}
+  const mockBaselineSDK1 = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 1}}
 
   const mockCodex = async (baseline: Record<string, any>, patches = {}) => {
 
@@ -57,7 +58,7 @@ describe('codex tests', async () => {
 
   it('should create the version data correctly', async () => {
 
-    const content = {info: {version: 'v5.0-SDK.1'}}
+    const content = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 1 }}
 
     const codex = await mockCodex(mockBaseline)
     mockVdc(content)
@@ -112,7 +113,7 @@ describe('codex tests', async () => {
 
   it('should read the patch level', async () => {
     const level = 3
-    const baseline = {info: {version: `v5.0-SDK.${level}`}}
+    const baseline = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: level}}
 
     const codex = await mockCodex(baseline)
     expect(codex.getVersionPatchLevel()).to.deep.equal(level)
@@ -154,7 +155,7 @@ describe('codex tests', async () => {
   })
 
   it('should determine vdc updates', async () => {
-    const upstream = {info: {version: 'v5.0-SDK.2'}}
+    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2 }}
     const codex = await mockCodex(mockBaselineSDK1, {
       '1.patch': 'foo',
       '1.txt': 'foo desc',
@@ -174,7 +175,7 @@ describe('codex tests', async () => {
 
   it('should throw when upstream has a greater patch level than the number of patches',  async () => {
     const codex = await mockCodex(mockBaseline)
-    const upstream = {info: {version: 'v5.0-SDK.2'}}
+    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2 }}
     mockVdc(upstream)
 
     chai.use(chaiAsPromised)
@@ -207,7 +208,8 @@ describe('codex tests', async () => {
       swagger: '2.0',
       info: {
         description: 'Some description',
-        version: '5.0-SDK.1',
+        version: '5.0',
+        [swagger.sdkPatchLevelAttr]: 1,
         title: 'CLOUD API changed'
       }
     }
@@ -219,14 +221,13 @@ describe('codex tests', async () => {
 ===================================================================
 --- swagger.json
 +++ swagger.json
-@@ -1,8 +1,8 @@
- {
+@@ -2,7 +2,8 @@
    "swagger": "2.0",
    "info": {
      "description": "Some description",
--    "version": "5.0",
+     "version": "5.0",
 -    "title": "CLOUD API"
-+    "version": "5.0-SDK.1",
++    "${swagger.sdkPatchLevelAttr}": 1,
 +    "title": "CLOUD API changed"
    }
  }
