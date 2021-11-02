@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import ui from './ui'
 import { CodexRenderer } from '../contract/codex-renderer'
 
-export const sdkVersionSuffixPattern = /-SDK\.(\d+)/
+export const sdkPatchLevelAttr = 'x-sdk-patch-level'
 
 /**
  * get patch level from a swagger spec
@@ -12,28 +12,26 @@ export const sdkVersionSuffixPattern = /-SDK\.(\d+)/
  */
 export function getVersionPatchLevel(swagger: Record<string, any>): number {
 
-  if (swagger.info === undefined || swagger.info.version === undefined) {
-    throw new Error('invalid baseline swagger file; version information not found')
+  if (swagger.info === undefined || typeof swagger.info !== 'object') {
+    throw new Error('invalid baseline swagger file; info section not found')
   }
 
-  const match = swagger.info.version.match(sdkVersionSuffixPattern)
-  if (match === null || match.length < 2) {
+  if (swagger.info[sdkPatchLevelAttr] === undefined)  {
+    return 0
+  }
+  const level = Number(swagger.info[sdkPatchLevelAttr])
+  if (isNaN(level)) {
     return 0
   }
 
-  return Number(match[1])
+  return level
 }
 
 export function setPatchLevel(swagger: Record<string, any>, patchLevel: number) {
   if (swagger.info === undefined) {
     swagger.info = {}
   }
-
-  if (swagger.info.version === undefined) {
-    swagger.info.version = ''
-  }
-
-  swagger.info.version = swagger.info.version.replace(sdkVersionSuffixPattern, '') + `-SDK.${patchLevel}`
+  swagger.info[sdkPatchLevelAttr] = patchLevel
 }
 
 /**
