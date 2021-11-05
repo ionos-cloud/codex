@@ -52,6 +52,7 @@ describe('codex tests', async () => {
     const host = parts[1].substr(0, parts[1].indexOf('/'))
     const baseUrl = parts[1].substr(parts[1].indexOf('/') + 1)
     nock(`${proto}://${host}`)
+      .persist()
       .get(`/${baseUrl}`)
       .reply(200, JSON.stringify(content), {'Content-Type': 'application/json'})
   }
@@ -69,6 +70,7 @@ describe('codex tests', async () => {
     expect(storageMock.exists(storageMock.getBaselinePath()), 'baseline exists').to.eq(true)
     expect(codex.getBaseline(), 'baseline content').to.deep.equal(content)
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should count patches correctly', async () => {
@@ -91,24 +93,28 @@ describe('codex tests', async () => {
 
     expect(codex.getMaxPatchLevel()).to.equal(12)
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should return 0 when there are no patches', async () => {
     const codex = await mockCodex(mockBaseline, {'foo.txt': 'bar'})
     expect(codex.getMaxPatchLevel()).to.equal(0)
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should read the baseline correctly', async () => {
     const codex = await mockCodex(mockBaselineSDK1)
     expect(codex.getBaselineString()).to.equal(JSON.stringify(mockBaselineSDK1, null, 2))
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should read the baseline as a JSON', async () => {
     const codex = await mockCodex(mockBaselineSDK1)
     expect(codex.getBaseline()).to.deep.equal(mockBaselineSDK1)
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should read the patch level', async () => {
@@ -119,6 +125,7 @@ describe('codex tests', async () => {
     expect(codex.getVersionPatchLevel()).to.deep.equal(level)
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should read a patch', async () => {
@@ -128,6 +135,7 @@ describe('codex tests', async () => {
     expect(await codex.getPatch(1)).to.equal(patch1)
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should apply a patch', async () => {
@@ -152,6 +160,7 @@ describe('codex tests', async () => {
     expect(await codex.applyPatch(target, 1)).to.equal(expected)
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should determine vdc updates', async () => {
@@ -171,6 +180,7 @@ describe('codex tests', async () => {
     expect(update?.content).to.equal(renderers.json.marshal(upstream))
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should throw when upstream has a greater patch level than the number of patches',  async () => {
@@ -182,6 +192,7 @@ describe('codex tests', async () => {
     expect(codex.updateCheck()).to.eventually.be.rejectedWith(Error)
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should throw when baseline patch level is greater than the upstream patch level',  async () => {
@@ -193,6 +204,7 @@ describe('codex tests', async () => {
     expect(codex.updateCheck()).to.eventually.be.rejectedWith(Error)
 
     mock.restore()
+    nock.cleanAll()
   })
 
   it('should compute an upstream update correctly', async () => {
@@ -247,5 +259,6 @@ describe('codex tests', async () => {
       expect(fs.readFileSync(upstreamPatchFileName).toString()).to.equal(update?.patch)
     }
     mock.restore()
+    nock.cleanAll()
   })
 })
