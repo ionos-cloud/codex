@@ -142,18 +142,21 @@ export class Codex {
       return content
     }
 
-    // for (let i = (this.versionPatchLevel > 0 ? this.versionPatchLevel + 1 : 1); i <= level; i++) {
-    for (const i of Object.keys(this.patches).map(k => Number(k))) {
-      if (i < this.versionPatchLevel + 1 || i > level) continue
-      // eslint-disable-next-line no-await-in-loop
-      const patchedContent = await this.applyPatch(content, i)
-      ui.debug(`applying patch ${i}`)
+    const upstream = await this.fetchSwaggerFile()
+    const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
+
+    // apply only last patch
+    if (level > upstreamPatchLevel) {
+      const patchedContent = await this.applyPatch(content, level)
+      ui.debug(`applying patch ${level}`)
       if (patchedContent === false) {
-        ui.error(`failed to apply patch ${i}`)
+        ui.error(`failed to apply patch ${level}`)
         /* patch failed, mark the state and throw */
-        throw new PatchError('failed to apply patch', i, content)
+        throw new PatchError('failed to apply patch', level, content)
       }
       content = patchedContent as string
+    } else {
+      ui.debug('there is no patch to apply')
     }
 
     return content
