@@ -10,5 +10,5 @@
 
 ## v5.0.0
 
-- apply only last patch that it is not present in the upstream
-- get patch level from API version and vendor extensions too
+- apply only the last patch that it is not present in the upstream
+- get patch level from API version OR vendor extension
