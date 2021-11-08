@@ -7,3 +7,8 @@
 ## v4.1.0
 
 - use `x-sdk-patch-level` to store the patch level instead of the version suffix 
+
+## v5.0.0
+
+- apply only the last patch that it is not present in the upstream
+- get patch level from API version OR vendor extension
