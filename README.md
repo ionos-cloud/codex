@@ -201,6 +201,8 @@ EXAMPLE
   $ codex init https://api.url/spec
 ```
 
+❗ _Note_: make sure the new bucket supports versioning in order to save older versions of the swagger files over time.
+
 _See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/init.ts)_
 
 ## `codex lock`
