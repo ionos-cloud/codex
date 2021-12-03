@@ -201,7 +201,7 @@ EXAMPLE
   $ codex init https://api.url/spec
 ```
 
-Please enable versioning for the new bucket to be able to save older versions over time. In order to do that, go to [DCD](https://dcd.ionos.com/latest/) to Object Storage Management ➜ Select the new bucket ➜ Properties ➜ Versioning ➜ Enable.
+❗ _Note_: make sure the new bucket supports versioning in order to save older versions of the swagger files over time.
 
 _See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/init.ts)_
 
