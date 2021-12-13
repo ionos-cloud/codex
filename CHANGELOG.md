@@ -12,3 +12,7 @@
 
 - apply only the last patch that it is not present in the upstream
 - get patch level from API version OR vendor extension
+
+## v5.0.1
+
+- bug-fix: apply the last patch even if it is deployed in production

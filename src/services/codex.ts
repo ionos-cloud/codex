@@ -4,13 +4,13 @@ import * as swagger from './swagger'
 import * as diff from 'diff'
 import ui from './ui'
 import state from './state'
-import { PatchError } from '../exceptions/patch-error'
+import {PatchError} from '../exceptions/patch-error'
 import chalk from 'chalk'
-import { ApiConfig, CodexFormat, CodexStorage, PatchesCollection } from '../contract/codex-storage'
-import { S3 } from '../storage/s3'
+import {ApiConfig, CodexFormat, CodexStorage, PatchesCollection} from '../contract/codex-storage'
+import {S3} from '../storage/s3'
 import axios from 'axios'
-import { CodexRenderer } from '../contract/codex-renderer'
-import renderers, { DEFAULT_RENDERER } from '../renderers'
+import {CodexRenderer} from '../contract/codex-renderer'
+import renderers, {DEFAULT_RENDERER} from '../renderers'
 
 export interface UpstreamUpdateInfo {
   content: string;
@@ -145,8 +145,11 @@ export class Codex {
     const upstream = await this.fetchSwaggerFile()
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
 
-    // apply only last patch
-    if (level > upstreamPatchLevel) {
+    // apply only last patch even if it is deployed in production
+    if (level >= upstreamPatchLevel) {
+      if (level === upstreamPatchLevel) {
+        ui.debug(`note: patch ${level} is already deployed in upstream`)
+      }
       const patchedContent = await this.applyPatch(content, level)
       ui.debug(`applying patch ${level}`)
       if (patchedContent === false) {
