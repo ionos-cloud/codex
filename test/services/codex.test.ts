@@ -1,6 +1,6 @@
-import chai, { expect } from 'chai'
-import { Codex } from '../../src/services/codex'
-import { idleState } from '../../src/services/state'
+import chai, {expect} from 'chai'
+import {Codex} from '../../src/services/codex'
+import {idleState} from '../../src/services/state'
 import config from '../../src/services/config'
 import renderers from '../../src/renderers'
 import * as swagger from '../../src/services/swagger'
@@ -45,6 +45,12 @@ describe('codex tests', async () => {
     '1.patch': 'foo',
     '1.txt': 'bar'
   })
+  const mockCodexWith2Patches = (baseline: Record<string, any>) => mockCodex(baseline, {
+    '1.patch': 'foo',
+    '1.txt': 'bar',
+    '2.patch': 'bar',
+    '2.txt': 'bar desc'
+  })
 
   const mockVdc = (content: Record<string, any>) => {
     const parts = mocks.mockApiConfig.specUrl.split('://')
@@ -59,13 +65,13 @@ describe('codex tests', async () => {
 
   it('should create the version data correctly', async () => {
 
-    const content = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 1 }}
+    const content = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 1}}
 
     const codex = await mockCodex(mockBaseline)
     mockVdc(content)
 
     mock()
-    await codex.init({ specUrl: mocks.mockApiConfig.specUrl, format: 'json' })
+    await codex.init({specUrl: mocks.mockApiConfig.specUrl, format: 'json'})
     expect(storageMock.isDir(storageMock.getPatchesPath()), 'patches path exists').to.eq(true)
     expect(storageMock.exists(storageMock.getBaselinePath()), 'baseline exists').to.eq(true)
     expect(codex.getBaseline(), 'baseline content').to.deep.equal(content)
@@ -164,7 +170,7 @@ describe('codex tests', async () => {
   })
 
   it('should determine vdc updates', async () => {
-    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2 }}
+    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2}}
     const codex = await mockCodex(mockBaselineSDK1, {
       '1.patch': 'foo',
       '1.txt': 'foo desc',
@@ -183,9 +189,36 @@ describe('codex tests', async () => {
     nock.cleanAll()
   })
 
-  it('should throw when upstream has a greater patch level than the number of patches',  async () => {
+  it('should apply patch when upstream has the patch already deployed', async () => {
+    // having 2 patches in codex, baseline has only 1
+    // 2 patches are deployed in upstream, but the baseline from codex was not updated
+    const codex = await mockCodex(mockBaselineSDK1, {
+      '1.patch': 'foo',
+      '1.txt': 'foo desc',
+      '2.patch': 'bar',
+      '2.txt': 'bar desc'
+    })
+    // the upstream has 2 patches deployed
+    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2}}
+    mockVdc(upstream)
+
+    const compile = await codex.compile(2)
+    // x-sdk-patch-level should be 1, as the 2 was not updated from upstream
+    expect(compile).to.be.equal(`{
+  "info": {
+    "version": "v5.0",
+    "${swagger.sdkPatchLevelAttr}": 1
+  }
+}`)
+    expect(codex.getMaxPatchLevel()).to.equal(2)
+
+    mock.restore()
+    nock.cleanAll()
+  })
+
+  it('should throw when upstream has a greater patch level than the number of patches', async () => {
     const codex = await mockCodex(mockBaseline)
-    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2 }}
+    const upstream = {info: {version: 'v5.0', [swagger.sdkPatchLevelAttr]: 2}}
     mockVdc(upstream)
 
     chai.use(chaiAsPromised)
@@ -195,7 +228,7 @@ describe('codex tests', async () => {
     nock.cleanAll()
   })
 
-  it('should throw when baseline patch level is greater than the upstream patch level',  async () => {
+  it('should throw when baseline patch level is greater than the upstream patch level', async () => {
     const codex = await mockCodex(mockBaselineSDK1)
     const upstream = {info: {version: 'v5.0'}}
     mockVdc(upstream)
@@ -248,6 +281,62 @@ describe('codex tests', async () => {
     )
     expect(update?.content).to.equal(renderers.json.marshal(upstream))
 
+    if (update !== undefined) {
+      const upstreamPatchFileName = 'upstream.patch'
+      codex.createNewUpstreamUpdate(update.patch, upstreamPatchFileName)
+      await codex.updateBaseline(update.content)
+      expect(codex.baselineStr).to.equal(update.content)
+      expect(codex.baseline).to.deep.equal(upstream)
+      expect(storageMock.exists(storageMock.getBaselinePath())).to.be.true
+      expect(fs.existsSync(upstreamPatchFileName), 'upstream update file not created').to.be.true
+      expect(fs.readFileSync(upstreamPatchFileName).toString()).to.equal(update?.patch)
+    }
+    mock.restore()
+    nock.cleanAll()
+  })
+
+  it('should compute an upstream update correctly even if the last patch is deployed in production', async () => {
+    const codex = await mockCodexWith2Patches({
+      swagger: '2.0',
+      info: {
+        description: 'Some description',
+        version: '5.0',
+        [swagger.sdkPatchLevelAttr]: 1,
+        title: 'CLOUD API'
+      }
+    })
+    const upstream = {
+      swagger: '2.0',
+      info: {
+        description: 'Some description',
+        version: '5.0',
+        [swagger.sdkPatchLevelAttr]: 2,
+        title: 'CLOUD API changed'
+      }
+    }
+    mockVdc(upstream)
+
+    const update = await codex.updateCheck()
+    expect(update).to.not.be.undefined
+    expect(update?.patch).to.equal(`Index: swagger.json
+===================================================================
+--- swagger.json
++++ swagger.json
+@@ -2,8 +2,8 @@
+   "swagger": "2.0",
+   "info": {
+     "description": "Some description",
+     "version": "5.0",
+-    "${swagger.sdkPatchLevelAttr}": 1,
+-    "title": "CLOUD API"
++    "${swagger.sdkPatchLevelAttr}": 2,
++    "title": "CLOUD API changed"
+   }
+ }
+\\ No newline at end of file
+`
+    )
+    expect(update?.content).to.equal(renderers.json.marshal(upstream))
     if (update !== undefined) {
       const upstreamPatchFileName = 'upstream.patch'
       codex.createNewUpstreamUpdate(update.patch, upstreamPatchFileName)

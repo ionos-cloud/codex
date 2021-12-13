@@ -81,7 +81,7 @@ OPTIONS
   -m, --message=message
 ```
 
-_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/commit.ts)_
+_See code: [src/commands/commit.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/commit.ts)_
 
 ## `codex compile`
 
@@ -97,7 +97,7 @@ OPTIONS
   -o, --output=output
 ```
 
-_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/compile.ts)_
+_See code: [src/commands/compile.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/compile.ts)_
 
 ## `codex config [PATH] [VALUE]`
 
@@ -121,7 +121,7 @@ EXAMPLES
   $ codex config foo.bar value
 ```
 
-_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/config.ts)_
+_See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/config.ts)_
 
 ## `codex diff FILE1 FILE2`
 
@@ -145,7 +145,7 @@ OPTIONS
   -s, --semantic          perform a swagger semantic diff
 ```
 
-_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/diff.ts)_
+_See code: [src/commands/diff.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/diff.ts)_
 
 ## `codex edit`
 
@@ -163,7 +163,7 @@ OPTIONS
   -p, --patch=patch
 ```
 
-_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/edit.ts)_
+_See code: [src/commands/edit.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/edit.ts)_
 
 ## `codex help [COMMAND]`
 
@@ -204,7 +204,7 @@ EXAMPLE
 
 ❗ _Note_: make sure the new bucket supports versioning in order to save older versions of the swagger files over time.
 
-_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/init.ts)_
 
 ## `codex lock`
 
@@ -222,7 +222,7 @@ EXAMPLE
   $ codex lock
 ```
 
-_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/lock.ts)_
+_See code: [src/commands/lock.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/lock.ts)_
 
 ## `codex login`
 
@@ -242,7 +242,7 @@ EXAMPLE
   $ codex login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/login.ts)_
 
 ## `codex normalize FILE`
 
@@ -261,7 +261,7 @@ OPTIONS
   -i, --indent=indent     [default: 2]
 ```
 
-_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/normalize.ts)_
+_See code: [src/commands/normalize.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/normalize.ts)_
 
 ## `codex patch`
 
@@ -282,7 +282,7 @@ OPTIONS
   -r, --rm=rm            remove the specified patch
 ```
 
-_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/patch.ts)_
+_See code: [src/commands/patch.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/patch.ts)_
 
 ## `codex sdk-changes`
 
@@ -300,7 +300,7 @@ EXAMPLE
   $ codex sdk-changes
 ```
 
-_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/sdk-changes.ts)_
+_See code: [src/commands/sdk-changes.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/sdk-changes.ts)_
 
 ## `codex state`
 
@@ -316,7 +316,7 @@ OPTIONS
   --reset
 ```
 
-_See code: [src/commands/state.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/state.ts)_
+_See code: [src/commands/state.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/state.ts)_
 
 ## `codex status`
 
@@ -335,7 +335,7 @@ EXAMPLE
   $ codex status
 ```
 
-_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/status.ts)_
+_See code: [src/commands/status.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/status.ts)_
 
 ## `codex unlock`
 
@@ -353,7 +353,7 @@ EXAMPLE
   $ codex unlock
 ```
 
-_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/unlock.ts)_
+_See code: [src/commands/unlock.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/unlock.ts)_
 
 ## `codex update`
 
@@ -371,5 +371,5 @@ OPTIONS
   -y, --yes            answer yes to all questions; useful in CI automation
 ```
 
-_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v5.0.0/src/commands/update.ts)_
+_See code: [src/commands/update.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/update.ts)_
 <!-- commandsstop -->
