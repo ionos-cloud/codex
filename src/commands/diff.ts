@@ -18,7 +18,7 @@ export default class Diff extends Command {
       description: 'input files format'
     }),
     output: flags.string({
-      char: 'o', default: 'yaml', dependsOn: ['semantic'], description: 'output format of semantic diff structure',
+      char: 'o', default: 'yaml', description: 'output format. recommended to use it with semantic option',
       options: Object.keys(renderers)
     }),
     ignore: flags.string({char: 'i', multiple: true, description: 'ignore node', dependsOn: ['semantic']})

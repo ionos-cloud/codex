@@ -16,3 +16,4 @@
 ## v5.0.1
 
 - bug-fix: apply the last patch even if it is deployed in upstream and the baseline is not updated yet
+- bug-fix: perform diff even if semantic option is not set
