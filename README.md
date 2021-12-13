@@ -125,7 +125,8 @@ _See code: [src/commands/config.ts](https://github.com/ionos-cloud/codex/blob/v5
 
 ## `codex diff FILE1 FILE2`
 
-compute a diff between two json or yaml files, normalizing them first. You can use `--semantic`/`-s` option together with `--output yaml`/`-o yaml` for a more user-friendly output.
+compute a diff between two json or yaml files, normalizing them first.
+you can use `--semantic`/`-s` option together with `--output yaml`/`-o yaml` for a user-friendly output.
 
 ```
 USAGE
@@ -140,7 +141,7 @@ OPTIONS
   -f, --format=yaml|json  [default: json] input files format
   -h, --help              show CLI help
   -i, --ignore=ignore     ignore node
-  -o, --output=yaml|json  [default: yaml] output format of semantic diff structure
+  -o, --output=yaml|json  [default: yaml] output format. recommended to use it with semantic option
   -s, --semantic          perform a swagger semantic diff
 ```
 
