@@ -145,11 +145,20 @@ export class Codex {
     const upstream = await this.fetchSwaggerFile()
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
 
-    // apply only last patch even if it is deployed in production and baseline is not yet updated
-    if (level >= upstreamPatchLevel) {
-      if (level === upstreamPatchLevel) {
-        ui.debug(`patch ${level} is deployed in upstream (upstream patch level: ${upstreamPatchLevel}), baseline is not updated`)
+    if (level > upstreamPatchLevel) {
+      const patchedContent = await this.applyPatch(content, level)
+      ui.debug(`applying patch ${level}`)
+      if (patchedContent === false) {
+        ui.error(`failed to apply patch ${level}`)
+        /* patch failed, mark the state and throw */
+        throw new PatchError('failed to apply patch', level, content)
       }
+      content = patchedContent as string
+    } else if (level === upstreamPatchLevel && this.versionPatchLevel < upstreamPatchLevel) {
+      // apply only last patch even if it is deployed in production and baseline is not yet updated
+      ui.debug(`upstream patch level: ${upstreamPatchLevel}, baseline patch level: ${this.versionPatchLevel}`)
+      ui.debug(`patch ${level} is deployed in upstream, baseline is not updated`)
+
       const patchedContent = await this.applyPatch(content, level)
       ui.debug(`applying patch ${level}`)
       if (patchedContent === false) {
@@ -163,7 +172,6 @@ export class Codex {
     }
 
     return content
-
   }
 
   async compileAll(): Promise<string> {
