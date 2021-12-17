@@ -146,9 +146,9 @@ export class Codex {
     const upstreamPatchLevel = swagger.getVersionPatchLevel(upstream)
 
     // apply only last patch even if it is deployed in production and baseline is not yet updated
-    if (level >= upstreamPatchLevel && this.versionPatchLevel < upstreamPatchLevel) {
+    if (level >= upstreamPatchLevel) {
       if (level === upstreamPatchLevel) {
-        ui.debug(`patch ${level} is deployed in upstream (upstream patch level: ${upstreamPatchLevel}), baseline is not updated (baseline patch level: ${this.versionPatchLevel})`)
+        ui.debug(`patch ${level} is deployed in upstream (upstream patch level: ${upstreamPatchLevel}), baseline is not updated`)
       }
       const patchedContent = await this.applyPatch(content, level)
       ui.debug(`applying patch ${level}`)
