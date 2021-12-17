@@ -21,3 +21,7 @@
 ## v5.0.2
 
 - bug-fix: apply the last patch even if it is deployed in upstream and the baseline is not updated yet
+
+## v5.0.3
+
+- bug-fix: apply the last patch, revert latest changes
