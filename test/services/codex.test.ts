@@ -189,7 +189,7 @@ describe('codex tests', async () => {
     nock.cleanAll()
   })
 
-  it('should apply patch when upstream has the patch already deployed', async () => {
+  it('should apply patch when upstream has the patch already deployed and baseline not yet updated', async () => {
     // having 2 patches in codex, baseline has only 1
     // 2 patches are deployed in upstream, but the baseline from codex was not updated
     const codex = await mockCodex(mockBaselineSDK1, {

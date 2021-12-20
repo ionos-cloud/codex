@@ -25,3 +25,7 @@
 ## v5.0.3
 
 - bug-fix: apply the last patch, revert latest changes
+
+## v5.0.4
+
+- bug-fix: apply the last patch, when the patch level is higher than upstream level and when they are equal, if the baseline was not updated
