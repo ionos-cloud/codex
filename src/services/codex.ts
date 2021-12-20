@@ -149,10 +149,9 @@ export class Codex {
     if (level > upstreamPatchLevel) {
       content = await this.applyLastPatch(content, level);
     } else if (level === upstreamPatchLevel && this.versionPatchLevel < upstreamPatchLevel) {
-      // apply only last patch if it is deployed in production and baseline is not yet updated
       ui.debug(`upstream patch level: ${upstreamPatchLevel}, baseline patch level: ${this.versionPatchLevel}`)
       ui.debug(`patch ${level} is deployed in upstream, baseline is not updated`)
-
+      // apply only last patch if it is deployed in production and baseline is not yet updated
       content = await this.applyLastPatch(content, level);
     } else {
       ui.debug('there is no patch to apply')
