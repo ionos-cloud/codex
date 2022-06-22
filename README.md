@@ -186,6 +186,9 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2
 
 initialize a codex project in S3
 
+❗ _Note_: Before running the command, make sure to create the new bucket in dcd. After you create the bucket, run : `codex config s3.bucket <bucket_name_here>`, so you point to the correct 
+location. Make sure the new bucket supports versioning in order to save older versions of the swagger files over time.
+
 ```
 USAGE
   $ codex init URL
@@ -201,8 +204,6 @@ OPTIONS
 EXAMPLE
   $ codex init https://api.url/spec
 ```
-
-❗ _Note_: make sure the new bucket supports versioning in order to save older versions of the swagger files over time.
 
 _See code: [src/commands/init.ts](https://github.com/ionos-cloud/codex/blob/v5.0.1/src/commands/init.ts)_
 
