@@ -14,7 +14,7 @@ export default class Commit extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    message: flags.string({char: 'm', required: false})
+    message: flags.string({char: 'm', required: true})
   }
 
   async run() {
