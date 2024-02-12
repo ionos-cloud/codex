@@ -1,4 +1,4 @@
-export const DEFAULT_INDENT = 2
+export const DEFAULT_INDENT = 4
 
 export default {
   marshal: function (object: any, indent: number = DEFAULT_INDENT): string {

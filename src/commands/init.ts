@@ -2,6 +2,8 @@ import { Codex } from '../services/codex'
 import BaseCommand from '../base/base-command'
 import { flags } from '@oclif/command'
 import renderers from '../renderers'
+import ui from '../services/ui'
+import config from '../services/config'
 
 export default class Init extends BaseCommand {
   static description = 'initialize a codex project in S3'
@@ -27,10 +29,27 @@ export default class Init extends BaseCommand {
   }]
 
   async run() {
-    const codex = new Codex()
-    await codex.init({
-      specUrl: this.args.url,
-      format: this.flags.format
-    })
+    ui.warning(`bucket ${config.get('s3.bucket')} will be reset`)
+
+    const { Toggle } = require('enquirer')
+
+    const prompt = new Toggle({
+      message: `Are you sure you want to re-init the current bucket (${config.get('s3.bucket')})?`,
+      enabled: 'Yes',
+      disabled: 'No'
+    });
+
+    const answer = await prompt.run()
+
+    if (answer) {
+      const codex = new Codex()
+      await codex.init({
+        specUrl: this.args.url,
+        format: this.flags.format
+      })
+    } else {
+      ui.info('bailing out')
+    }
+    return
   }
 }
