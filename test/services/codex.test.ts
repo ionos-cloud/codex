@@ -267,14 +267,14 @@ describe('codex tests', async () => {
 --- swagger.json
 +++ swagger.json
 @@ -2,7 +2,8 @@
-   "swagger": "2.0",
-   "info": {
-     "description": "Some description",
-     "version": "5.0",
--    "title": "CLOUD API"
-+    "${swagger.sdkPatchLevelAttr}": 1,
-+    "title": "CLOUD API changed"
-   }
+     "swagger": "2.0",
+     "info": {
+         "description": "Some description",
+         "version": "5.0",
+-        "title": "CLOUD API"
++        "${swagger.sdkPatchLevelAttr}": 1,
++        "title": "CLOUD API changed"
+     }
  }
 \\ No newline at end of file
 `
@@ -323,15 +323,15 @@ describe('codex tests', async () => {
 --- swagger.json
 +++ swagger.json
 @@ -2,8 +2,8 @@
-   "swagger": "2.0",
-   "info": {
-     "description": "Some description",
-     "version": "5.0",
--    "${swagger.sdkPatchLevelAttr}": 1,
--    "title": "CLOUD API"
-+    "${swagger.sdkPatchLevelAttr}": 2,
-+    "title": "CLOUD API changed"
-   }
+     "swagger": "2.0",
+     "info": {
+         "description": "Some description",
+         "version": "5.0",
+-        "${swagger.sdkPatchLevelAttr}": 1,
+-        "title": "CLOUD API"
++        "${swagger.sdkPatchLevelAttr}": 2,
++        "title": "CLOUD API changed"
+     }
  }
 \\ No newline at end of file
 `

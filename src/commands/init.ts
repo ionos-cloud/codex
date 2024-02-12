@@ -50,6 +50,5 @@ export default class Init extends BaseCommand {
     } else {
       ui.info('bailing out')
     }
-    return
   }
 }
