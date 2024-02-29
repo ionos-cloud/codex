@@ -34,7 +34,7 @@ export default class Init extends BaseCommand {
     const { Toggle } = require('enquirer')
 
     const prompt = new Toggle({
-      message: `Are you sure you want to re-init the current bucket (${config.get('s3.bucket')})?`,
+      message: `Are you sure you want to init the current bucket (${config.get('s3.bucket')})?`,
       enabled: 'Yes',
       disabled: 'No'
     });
