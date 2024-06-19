@@ -24,6 +24,10 @@ USAGE
 ...
 ```
 <!-- usagestop -->
+# Install latest master
+This might be easier than dealing with private registry etc
+`git clone git@github.com:ionos-cloud/codex.git && (cd codex && npm install -g .) && rm -rf codex`
+
 # Commands
 <!-- commands -->
 * [`codex autocomplete [SHELL]`](#codex-autocomplete-shell)
