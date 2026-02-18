@@ -2,7 +2,7 @@ import { expect } from 'chai'
 
 import mocks from '../mocks'
 
-import mock = require('mock-fs')
+import mock from 'mock-fs'
 import state, { idleState } from '../../src/services/state'
 
 describe('state tests', () => {

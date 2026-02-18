@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import * as fs from 'fs'
@@ -14,7 +14,7 @@ export default class Commit extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    message: flags.string({char: 'm', required: true})
+    message: Flags.string({char: 'm', required: true})
   }
 
   async run() {
@@ -42,7 +42,7 @@ export default class Commit extends BaseCommand {
     let prevContent = ''
     try {
       prevContent = await codex.compile(state.data.patch - 1)
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof PatchError) {
         const failedPatch = error.patch
         ui.error(`something went wrong with patch ${failedPatch}`)
@@ -66,7 +66,7 @@ export default class Commit extends BaseCommand {
 
     try {
       await locking.unlock()
-    } catch (error) {
+    } catch (error: any) {
       ui.warning('an error occurred while trying to release the lock; ignoring')
     }
 

@@ -119,7 +119,7 @@ export class Storage implements CodexStorage {
     try {
       const d = await this.readFile(this.getPatchDescriptionPath(patch))
       return d
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error)
       ui.warning(`[storage-mock] could not read patch ${patch} description: ${error.message}`)
       return ''
@@ -151,7 +151,7 @@ export class Storage implements CodexStorage {
 
       }
 
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error)
       throw new Error(`[s3] could not read the list of patches: ${error.message}`)
     }
@@ -187,7 +187,7 @@ export class Storage implements CodexStorage {
     try {
       this.resolvePath(path)
       return true
-    } catch (error) {
+    } catch (error: any) {
       return false
     }
   }

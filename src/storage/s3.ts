@@ -1,4 +1,4 @@
-import aws = require('aws-sdk')
+import * as aws from 'aws-sdk'
 
 import { CodexStorage, ApiConfig, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
@@ -48,7 +48,7 @@ export class S3 implements CodexStorage {
         Bucket: this.bucket,
         Key: path,
       }).promise()
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not read file ${path}: ${error.message}`)
     }
@@ -67,7 +67,7 @@ export class S3 implements CodexStorage {
         Key: path,
         Body: Buffer.from(content, 'utf8')
       }).promise()
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not save file ${path}: ${error.message}`)
     }
@@ -80,7 +80,7 @@ export class S3 implements CodexStorage {
         Bucket: this.bucket,
         Key: path
       }).promise()
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not remove file ${path}: ${error.message}`)
     }
@@ -129,7 +129,7 @@ export class S3 implements CodexStorage {
   async readPatchDescription(patch: number): Promise<string> {
     try {
       return await this.readFile(this.getPatchDescriptionPath(patch))
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error)
       ui.warning(`[s3] could not read patch ${patch} description: ${error.message}`)
       return ''
@@ -165,7 +165,7 @@ export class S3 implements CodexStorage {
 
       }
 
-    } catch (error) {
+    } catch (error: any) {
       ui.debug(error)
       throw new Error(`[s3] could not read the list of patches: ${error.message}`)
     }

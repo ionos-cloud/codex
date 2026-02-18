@@ -1,6 +1,6 @@
 import { Codex } from '../services/codex'
 import BaseCommand from '../base/base-command'
-import { flags } from '@oclif/command'
+import { Args, Flags } from '@oclif/core'
 import renderers from '../renderers'
 import ui from '../services/ui'
 import config from '../services/config'
@@ -14,19 +14,19 @@ export default class Init extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    format: flags.string({
+    format: Flags.string({
       char: 'f', required: true,
       options: Object.keys(renderers),
       description: 'spec format'
     })
   }
 
-  static args = [{
-    name: 'url',
-    required: true,
-    description: 'api spec url',
-    type: 'string'
-  }]
+  static args = {
+    url: Args.string({
+      required: true,
+      description: 'api spec url',
+    })
+  }
 
   async run() {
     ui.warning(`bucket ${config.get('s3.bucket')} will be reset`)

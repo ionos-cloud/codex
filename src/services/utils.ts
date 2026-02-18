@@ -23,7 +23,7 @@ export async function readFile(file: string, renderer: CodexRenderer): Promise<R
           ret = renderer.unmarshal(renderer.marshal(response.data))
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response !== undefined && error.response.status !== undefined) {
         ui.debug(error)
         throw new Error(`could not fetch ${file}: got HTTP status code ${error.response.status}`)
@@ -35,7 +35,7 @@ export async function readFile(file: string, renderer: CodexRenderer): Promise<R
     const str = fs.readFileSync(file).toString()
     try {
       ret = renderer.unmarshal(str)
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`error decoding content from ${file}: ${error.message}`)
     }
   }

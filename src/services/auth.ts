@@ -1,6 +1,5 @@
 import config from './config'
 import axios from 'axios'
-import { cli } from 'cli-ux'
 import ui from './ui'
 import renderers from '../renderers'
 
@@ -22,12 +21,12 @@ export async function login(username: string, password: string): Promise<string>
       }
     })
     return response.data.jwt
-  } catch (error) {
+  } catch (error: any) {
     if (error.response.status === 401) {
       throw new Error('login failed: invalid username or password')
     }
-    cli.error(`login request failed with HTTP status code ${error.response.status}`)
-    cli.error(`response was: ${renderers.json.marshal(error.response.data)}`)
+    ui.error(`login request failed with HTTP status code ${error.response.status}`)
+    ui.error(`response was: ${renderers.json.marshal(error.response.data)}`)
     throw new Error('login failed')
   }
 }
@@ -41,7 +40,7 @@ export async function validate(token: string): Promise<boolean> {
       }
     })
     return response.status === 200;
-  } catch (error) {
+  } catch (error: any) {
     if (error.response.status === 401) {
       ui.warning('existing auth token is invalid or expired; you will need to login again')
       return false

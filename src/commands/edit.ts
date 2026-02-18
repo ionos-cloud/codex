@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import * as fs from 'fs'
@@ -15,9 +15,9 @@ export default class Edit extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    patch: flags.integer({char: 'p', required: false, default: 0}),
-    output: flags.string({char: 'o', required: false}),
-    abort: flags.boolean({char: 'a', default: false})
+    patch: Flags.integer({char: 'p', required: false, default: 0}),
+    output: Flags.string({char: 'o', required: false}),
+    abort: Flags.boolean({char: 'a', default: false})
   }
 
   async run() {
@@ -101,7 +101,7 @@ export default class Edit extends BaseCommand {
     let compiled = ''
     try {
       compiled = await codex.compile(createNew ? maxPatchLevel : patchToEdit)
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof PatchError) {
         fs.writeFileSync(output, compiled)
         state.set({

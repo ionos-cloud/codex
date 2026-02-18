@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import * as auth from '../services/auth'
 import config from '../services/config'
@@ -15,8 +15,8 @@ export default class Login extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    username: flags.string({char: 'u', required: false, description: 'username to login with'}),
-    password: flags.string({char: 'p', required: false, description: 'password to login with'})
+    username: Flags.string({char: 'u', required: false, description: 'username to login with'}),
+    password: Flags.string({char: 'p', required: false, description: 'password to login with'})
   }
 
   async run() {

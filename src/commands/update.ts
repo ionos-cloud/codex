@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
@@ -11,17 +11,17 @@ export default class Update extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    check: flags.boolean({
+    check: Flags.boolean({
       char: 'c',
       description: 'check if there\'s an update without actually performing the update',
       default: false
     }),
-    yes: flags.boolean({
+    yes: Flags.boolean({
       char: 'y',
       description: 'answer yes to all questions; useful in CI automation',
       default: false
     }),
-    output: flags.string({
+    output: Flags.string({
       char: 'o',
       required: true
     })

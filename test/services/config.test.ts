@@ -1,5 +1,5 @@
 import mocks from '../mocks'
-import mock = require('mock-fs')
+import mock from 'mock-fs'
 
 import config from '../../src/services/config'
 import { expect } from 'chai'

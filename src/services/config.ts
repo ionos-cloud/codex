@@ -67,7 +67,7 @@ export class Config {
       } else {
         ui.warning('config file not found')
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error
     }
 

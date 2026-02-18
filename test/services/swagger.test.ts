@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import * as swagger from '../../src/services/swagger'
-import mock = require('mock-fs')
+import mock from 'mock-fs'
 import * as fs from 'fs'
 import renderers from '../../src/renderers'
 

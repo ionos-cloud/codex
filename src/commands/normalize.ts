@@ -1,4 +1,4 @@
-import {Command, flags} from '@oclif/command'
+import { Command, Flags, Args } from '@oclif/core'
 import * as json from '../services/utils'
 import ui from '../services/ui'
 import renderers from '../renderers'
@@ -7,12 +7,13 @@ export default class Normalize extends Command {
   static description = 'take a minified json or yaml file a produce an indented version of it'
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    indent: flags.integer({char: 'i', default: 2}),
-    format: flags.string({char: 'f', default: 'json', options: Object.keys(renderers), description: 'file format'})
+    indent: Flags.integer({char: 'i', default: 2}),
+    format: Flags.string({char: 'f', default: 'json', options: Object.keys(renderers), description: 'file format'})
   }
 
-  static args = [{name: 'file', required: true, description: 'file to normalizeFile'}]
+  static args = {
+    file: Args.string({required: true, description: 'file to normalizeFile'})
+  }
 
   protected async catch(err: any) {
     ui.error(err.message)
@@ -20,7 +21,7 @@ export default class Normalize extends Command {
   }
 
   async run() {
-    const {args, flags} = this.parse(Normalize)
+    const {args, flags} = await this.parse(Normalize)
     process.stdout.write(await json.normalizeFile(args.file, renderers[flags.format as keyof typeof renderers], flags.indent))
   }
 }
