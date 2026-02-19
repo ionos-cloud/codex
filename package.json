@@ -12,7 +12,6 @@
     "@types/chai": "^4.2.15",
     "@types/chai-as-promised": "^7.1.3",
     "@types/diff": "^5.0.0",
-    "@types/glob": "^7.1.3",
     "@types/mocha": "^10",
     "@types/mock-fs": "^4.13.0",
     "@types/node": "^20",
@@ -72,8 +71,15 @@
     "chalk": "^4",
     "diff": "^8.0.3",
     "enquirer": "^2.3.6",
-    "glob": "^7.1.6",
     "tslib": "^2",
     "yaml": "^2"
+  },
+  "overrides": {
+    "@oclif/core": {
+      "minimatch": "10.2.1"
+    },
+    "filelist": {
+      "minimatch": "10.2.1"
+    }
   }
 }
