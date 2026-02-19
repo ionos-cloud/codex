@@ -1,4 +1,4 @@
-import * as aws from 'aws-sdk'
+import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
 
 import { CodexStorage, ApiConfig, PatchesCollection } from '../contract/codex-storage'
 import config from '../services/config'
@@ -13,11 +13,13 @@ export class S3 implements CodexStorage {
   static patchesDir = 'patches'
   static apiConfigFileName = 'api-config.json'
 
-  s3 = new aws.S3({
-    accessKeyId: config.data.s3.key,
-    secretAccessKey: config.data.s3.secret,
-    endpoint: config.data.s3.endpoint,
+  s3 = new S3Client({
+    credentials: { accessKeyId: config.data.s3.key, secretAccessKey: config.data.s3.secret },
+    endpoint: config.data.s3.endpoint.startsWith('http')
+      ? config.data.s3.endpoint
+      : `https://${config.data.s3.endpoint}`,
     region: config.data.s3.region,
+    forcePathStyle: true,
   })
 
   apiConfig?: ApiConfig
@@ -44,10 +46,10 @@ export class S3 implements CodexStorage {
     ui.debug(`[s3] reading file ${path}`)
     let data
     try {
-      data = await this.s3.getObject({
+      data = await this.s3.send(new GetObjectCommand({
         Bucket: this.bucket,
         Key: path,
-      }).promise()
+      }))
     } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not read file ${path}: ${error.message}`)
@@ -57,16 +59,16 @@ export class S3 implements CodexStorage {
       throw new Error(`[s3] could not read file ${path}`)
     }
 
-    return data.Body.toString()
+    return data.Body.transformToString()
   }
 
   protected async writeFile(path: string, content: string) {
     try {
-      await this.s3.upload({
+      await this.s3.send(new PutObjectCommand({
         Bucket: this.bucket,
         Key: path,
-        Body: Buffer.from(content, 'utf8')
-      }).promise()
+        Body: content,
+      }))
     } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not save file ${path}: ${error.message}`)
@@ -76,10 +78,10 @@ export class S3 implements CodexStorage {
 
   protected async removeFile(path: string) {
     try {
-      await this.s3.deleteObject({
+      await this.s3.send(new DeleteObjectCommand({
         Bucket: this.bucket,
-        Key: path
-      }).promise()
+        Key: path,
+      }))
     } catch (error: any) {
       ui.debug(error.stack)
       throw new Error(`[s3] could not remove file ${path}: ${error.message}`)
@@ -144,10 +146,10 @@ export class S3 implements CodexStorage {
     const numbers: number[] = []
     const path = this.getPatchesPath() + '/'
     try {
-      const data = await this.s3.listObjectsV2({
+      const data = await this.s3.send(new ListObjectsV2Command({
         Bucket: this.bucket,
-        Prefix: path
-      }).promise()
+        Prefix: path,
+      }))
 
       if (data.Contents === undefined) {
         ui.warning('no patches found; got an empty response from S3')
