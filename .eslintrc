@@ -20,8 +20,6 @@
     "eol-last": "off",
     "array-bracket-spacing": "off",
     "no-process-exit": "off",
-    "no-useless-catch": "off",
-    "no-unsafe-optional-chaining": "off",
     "operator-linebreak": "off",
     "complexity": "off",
     "max-depth": "off",

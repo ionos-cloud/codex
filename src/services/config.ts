@@ -56,19 +56,15 @@ export class Config {
   load(dir: string, validate = true) {
     this.dir = dir
     this.path = this.getConfigFileName(dir)
-    try {
-      if (fs.existsSync(this.path)) {
-        ui.debug(`loading config from ${this.path}`)
-        const cfg = JSON.parse(fs.readFileSync(this.path).toString())
-        this.data = {
-          ...this.data,
-          ...cfg
-        }
-      } else {
-        ui.warning('config file not found')
+    if (fs.existsSync(this.path)) {
+      ui.debug(`loading config from ${this.path}`)
+      const cfg = JSON.parse(fs.readFileSync(this.path).toString())
+      this.data = {
+        ...this.data,
+        ...cfg
       }
-    } catch (error: any) {
-      throw error
+    } else {
+      ui.warning('config file not found')
     }
 
     if (validate) {

@@ -87,7 +87,7 @@ export class S3 implements CodexStorage {
   }
 
   public getBaselinePath(): string {
-    return S3.baselineFileName + '.' + this.apiConfig?.format
+    return S3.baselineFileName + '.' + (this.apiConfig?.format ?? '')
   }
 
   public getPatchesPath(): string {
