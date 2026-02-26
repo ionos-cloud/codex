@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import BaseCommand from '../base/base-command'
 import state from '../services/state'
@@ -9,7 +9,7 @@ export default class State extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    reset: flags.boolean({default: false, required: false})
+    reset: Flags.boolean({default: false, required: false})
   }
 
   async run() {

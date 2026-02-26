@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
@@ -13,7 +13,7 @@ export default class Status extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    reset: flags.boolean({char: 'r', default: false})
+    reset: Flags.boolean({char: 'r', default: false})
   }
 
   async run() {

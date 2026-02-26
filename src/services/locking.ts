@@ -19,7 +19,7 @@ export async function lock() {
         }
       })
       break
-    } catch (error) {
+    } catch (error: any) {
       if (error.response === undefined) {
         ui.error(error)
       } else {
@@ -52,7 +52,7 @@ export async function unlock() {
         'X-Auth-Provider': 'ldap'
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     ui.error(`error encountered while trying to release the lock: HTTP CODE ${error.response.status}`)
     ui.error(renderers.json.marshal(error.response.data))
     throw new Error('could not release the lock')

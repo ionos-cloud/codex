@@ -1,8 +1,7 @@
 import * as json from '../services/utils'
 import { readFile } from '../services/utils'
-// import BaseCommand from '../base/base-command'
 import ui from '../services/ui'
-import { Command, flags } from '@oclif/command'
+import { Command, Flags, Args } from '@oclif/core'
 import runConfig from '../services/run-config'
 import semanticDiff from '../services/semantic-diff'
 import renderers from '../renderers'
@@ -10,34 +9,31 @@ import renderers from '../renderers'
 export default class Diff extends Command {
   static description = 'compute a diff between two json or yaml files, normalizing them first'
   static flags = {
-    help: flags.help({char: 'h'}),
-    debug: flags.boolean({char: 'd', default: false, description: 'show debug information'}),
-    semantic: flags.boolean({char: 's', default: false, description: 'perform a swagger semantic diff'}),
-    format: flags.string({
+    debug: Flags.boolean({char: 'd', default: false, description: 'show debug information'}),
+    semantic: Flags.boolean({char: 's', default: false, description: 'perform a swagger semantic diff'}),
+    format: Flags.string({
       char: 'f', default: 'json', options: Object.keys(renderers),
       description: 'input files format'
     }),
-    output: flags.string({
+    output: Flags.string({
       char: 'o', default: 'yaml', description: 'output format. recommended to use it with semantic option',
       options: Object.keys(renderers)
     }),
-    ignore: flags.string({char: 'i', multiple: true, description: 'ignore node', dependsOn: ['semantic']})
+    ignore: Flags.string({char: 'i', multiple: true, description: 'ignore node', dependsOn: ['semantic']})
   }
-  static args = [
-    {
-      name: 'file1',
+  static args = {
+    file1: Args.string({
       required: true,
       description: 'first file'
-    },
-    {
-      name: 'file2',
+    }),
+    file2: Args.string({
       required: true,
       description: 'second file'
-    }
-  ]
+    })
+  }
 
   async run() {
-    const {flags, args} = this.parse(this.ctor)
+    const {flags, args} = await this.parse(this.ctor)
     runConfig.debug = flags.debug
 
     const inputRenderer = renderers[flags.format as keyof typeof renderers]

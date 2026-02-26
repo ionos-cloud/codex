@@ -7,9 +7,9 @@ import * as swagger from '../../src/services/swagger'
 
 import mocks from '../mocks'
 
-import fs = require('fs')
-import mock = require('mock-fs')
-import nock = require('nock')
+import * as fs from 'fs'
+import mock from 'mock-fs'
+import nock from 'nock'
 import chaiAsPromised from 'chai-as-promised'
 
 describe('codex tests', async () => {

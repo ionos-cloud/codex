@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
 import * as fs from 'fs'
@@ -13,7 +13,7 @@ export default class Compile extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    output: flags.string({char: 'o', required: false})
+    output: Flags.string({char: 'o', required: false})
   }
 
   async run() {
@@ -33,7 +33,7 @@ export default class Compile extends BaseCommand {
     let content = ''
     try {
       content = await codex.compile(codex.getMaxPatchLevel())
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof PatchError) {
         await locking.lock()
         fs.writeFileSync(output, error.content)

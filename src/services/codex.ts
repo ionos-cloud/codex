@@ -262,7 +262,7 @@ export class Codex {
       }
       ui.debug('got a json spec')
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       if (error.response !== undefined && error.response.status !== undefined && error.response.status === 404) {
         throw new Error(`swagger file not found at ${specUrl}`)
       }

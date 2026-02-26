@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command'
+import { Command, Flags } from '@oclif/core'
 import config from '../services/config'
 import runConfig from '../services/run-config'
 import ui from '../services/ui'
@@ -9,14 +9,14 @@ export default abstract class BaseCommand extends Command {
   args: Record<string, any> = {}
 
   static flags = {
-    help: flags.help({char: 'h'}),
-    debug: flags.boolean({char: 'd', default: false, description: 'show debug information'})
+    debug: Flags.boolean({char: 'd', default: false, description: 'show debug information'})
   }
 
-  static args: any[] = []
+  static args = {}
 
   async init() {
-    const {flags, args} = this.parse(this.ctor)
+    await super.init()
+    const {flags, args} = await this.parse(this.ctor)
     this.flags = flags
     this.args = args
     runConfig.debug = this.flags.debug

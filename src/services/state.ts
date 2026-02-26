@@ -84,7 +84,7 @@ export class State {
     if (this.data.file !== undefined) {
       try {
         await locking.unlock()
-      } catch (error) {
+      } catch (error: any) {
         ui.warning(`an error occurred while releasing the lock (ignoring): ${error.message}`)
       }
       ui.warning(`removing file ${this.data.file}`)

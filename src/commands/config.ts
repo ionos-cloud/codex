@@ -1,3 +1,4 @@
+import { Args } from '@oclif/core'
 import config from '../services/config'
 import BaseCommand from '../base/base-command'
 import ui from '../services/ui'
@@ -20,16 +21,16 @@ export default class Config extends BaseCommand {
     ...BaseCommand.flags
   }
 
-  static args = [{
-    name: 'path',
-    required: false,
-    description: 'configuration setting path e.g. \'auth.username\'',
-    type: 'string'
-  }, {
-    name: 'value',
-    required: false,
-    description: 'configuration value'
-  }]
+  static args = {
+    path: Args.string({
+      required: false,
+      description: 'configuration setting path e.g. \'auth.username\'',
+    }),
+    value: Args.string({
+      required: false,
+      description: 'configuration value'
+    })
+  }
 
   async run() {
 

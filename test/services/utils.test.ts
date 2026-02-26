@@ -1,8 +1,8 @@
 import chai, { expect } from 'chai'
-import mock = require('mock-fs')
-import nock = require('nock')
+import mock from 'mock-fs'
+import nock from 'nock'
 import * as utils from '../../src/services/utils'
-import chaiAsPromised = require('chai-as-promised')
+import chaiAsPromised from 'chai-as-promised'
 import renderers from '../../src/renderers'
 
 describe('json tests', () => {

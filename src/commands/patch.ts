@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { Codex } from '../services/codex'
 import ui from '../services/ui'
@@ -13,26 +13,26 @@ export default class Patch extends BaseCommand {
 
   static flags = {
     ...BaseCommand.flags,
-    message: flags.string({char: 'm', required: false}),
-    number: flags.integer({
+    message: Flags.string({char: 'm', required: false}),
+    number: Flags.integer({
       char: 'n',
       required: false,
       description: 'patch to set message for; defaults to last patch',
       dependsOn: [ 'message' ]
     }),
-    list: flags.boolean({
+    list: Flags.boolean({
       char: 'l', required: false, exclusive: ['message'],
       description: 'list all the patches'
     }),
-    rm: flags.integer({
+    rm: Flags.integer({
       char: 'r', required: false, exclusive: ['message', 'list', 'get'],
       description: 'remove the specified patch'
     }),
-    get: flags.integer({
+    get: Flags.integer({
       char: 'g', required: false, exclusive: ['message', 'list', 'rm'],
       description: 'display the contents of the specified patch'
     }),
-    output: flags.string({
+    output: Flags.string({
       char: 'o',
       description: 'save patch to the specified file',
       required: false,
