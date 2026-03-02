@@ -1,3 +1,9 @@
+## v5.1.0
+
+- bump all versions, modernize codex
+- add 'buckets list [--filter <name>]' command
+
+
 ## v5.0.5
 
 - enhancement: make `-m` flag for `codex commit` required
