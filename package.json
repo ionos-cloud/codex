@@ -67,7 +67,7 @@
     "@oclif/plugin-autocomplete": "^3",
     "@oclif/plugin-help": "^6",
     "@aws-sdk/client-s3": "^3",
-    "axios": "^1.7",
+    "axios": "1.14.0",
     "chalk": "^4",
     "diff": "^8.0.3",
     "enquirer": "^2.3.6",
